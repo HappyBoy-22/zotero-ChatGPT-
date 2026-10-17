@@ -1,0 +1,94 @@
+# Zotero ChatGPT 论文助手
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Zotero 10](https://img.shields.io/badge/Zotero-10.0.x-CC2936.svg)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.8.2-20856B.svg)](CHANGELOG.md)
+
+在 Zotero 侧边栏使用 ChatGPT 官网，一边读论文，一边继续这篇论文的对话。使用网页登录，无需 API Key；同时提供 PDF 拖动、缩放和临时批注快捷键。
+
+**[下载插件 v0.8.2](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.8.2.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
+
+## 功能
+
+| 功能 | 使用方式 |
+| --- | --- |
+| ChatGPT 阅读侧栏 | 在 PDF 旁展开聊天，可拖动调整宽度 |
+| 一篇论文一个对话 | 首次发送后自动保存对话链接，返回论文时恢复原对话 |
+| 自定义分析 prompt | 首次展开时自动发送 prompt、标题、作者、年份、期刊 / 会议、DOI 和链接 |
+| 保持阅读状态 | 侧栏初次默认关闭；展开后切换论文保持展开，并切换到对应对话 |
+| PDF 操作快捷键 | Ctrl + 滚轮缩放、Ctrl + 左键拖动、临时文本 / 画笔 / 橡皮擦 |
+| 批注默认样式 | 设置文字字号和颜色、画笔粗细和颜色、橡皮擦直径 |
+
+## 安装
+
+目前面向 **Zotero 10.0.x**，在 **Windows / Zotero 10.0.6** 环境验证。安装清单不支持 Zotero 6、7、8；其他系统尚未验证。
+
+1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.8.2.xpi)，保留 `.xpi` 后缀，无需解压。
+2. 打开 Zotero，进入 **工具 → 插件 → 齿轮 → 从文件安装插件**，选择下载的文件。
+3. 重启 Zotero，打开一篇 PDF，点击右上角 **ChatGPT** 展开侧栏。
+4. 在侧栏内登录自己的 ChatGPT 账号。登录状态与系统浏览器独立。
+
+升级时安装新版 XPI 即可，原有本机绑定和设置会保留。目前采用**手动更新**，没有在线自动更新服务。安装包校验值见 [SHA256SUMS](dist/SHA256SUMS)。
+
+## 开始使用
+
+进入 **编辑 → 设置 → ChatGPT 论文助手**，修改分析 prompt，保存设置。首次自动发送默认开启。
+
+第一次展开一篇新论文的侧栏时，插件会在已登录的 ChatGPT 页面发送 prompt 和论文基本信息，并记录生成的对话链接。以后切回这篇论文时继续原对话，不重复发送初始资料。同一父条目下的多个 PDF 共用一个对话。
+
+默认 prompt：
+
+> 请联网检索这篇论文，并用中文分析研究问题、核心贡献、方法、实验结果与局限。请给出来源链接，区分原文结论和你的推断；无法获取的内容请明确说明。
+
+自动初始化**不上传 PDF，也不提取正文、摘要、笔记或批注**。ChatGPT 能否找到原文、进行联网搜索以及完成分析，取决于当前账号、模型、网站能力和可访问的来源。
+
+已有对话可在 **对话管理** 中恢复，请使用自己的 `https://chatgpt.com/c/…` 对话链接，分享链接 `/share/…` 不适用。绑定保存在本机，不随 Zotero 同步到其他设备。更多操作见[使用指南](docs/usage.md)。
+
+## PDF 快捷键
+
+以下快捷键作用于 Zotero 的 PDF 页面。
+
+| 按键与鼠标操作 | 效果 |
+| --- | --- |
+| 按住 Ctrl + 滚轮 | 向上放大，向下缩小 |
+| 按住 Ctrl + 左键拖动 | 上下左右平移页面 |
+| 按住 Ctrl + A，再点左键 | 新建文本批注；松开鼠标和按键后继续输入 |
+| 按住空格 + 左键拖动 | 临时切换为画笔 |
+| 按住空格 + 右键拖动 | 临时切换为橡皮擦，擦除手写笔迹 |
+
+输入框内的 Ctrl + A 和空格保持正常行为。文字输入结束、点击别处或按 Esc 后恢复原工具；画线和擦除会在笔画结束后恢复。只读文档遵守 Zotero 的批注权限。
+
+在 **编辑 → 设置 → ChatGPT 论文助手 → PDF 批注默认样式** 中设置样式，点击 **保存批注样式**。下次使用快捷键即生效，已有批注保持原样。
+
+| 设置 | 默认值 | 范围 |
+| --- | --- | --- |
+| 文本字号 / 颜色 | 14 pt / 黑色 | 6–96 pt |
+| 画笔粗细 / 颜色 | 2 pt / 红色 | 0.25–20 pt |
+| 橡皮擦直径 | 16 pt | 2–100 pt |
+
+## 账号与数据
+
+- 使用 ChatGPT 官网账号，无需 API Key 或 API 额度；Plus 不是插件的必需条件，可用功能以官网账号为准。
+- 首次自动发送开启时，展开新论文侧栏会把 prompt 和论文基本信息发送给 ChatGPT。可以在设置中关闭自动发送。
+- 工具菜单提供手动复制论文信息、信息与批注的入口；复制后由你决定粘贴和发送。
+- 可选保存邮箱密码，凭据使用 Zotero 密码管理器保存。自动填写仅用于 OpenAI 官方 HTTPS 登录页面；验证码、双重验证或第三方登录需要手动完成。
+- 插件通过网页输入框和发送按钮工作，不调用 ChatGPT 私有接口，不提取会话令牌。
+
+官网改版、验证页面、网络异常或账号限制可能影响自动发送和绑定。插件会保护已有输入草稿，并在发送结果不确定时暂停，避免重复提交。排查步骤见[常见问题](docs/usage.md#常见问题)。
+
+## 开发
+
+无需安装第三方构建依赖。准备 Python 3 和 Node.js 22 后运行：
+
+```sh
+node scripts/test.cjs
+python build.py
+```
+
+产物位于 `dist/`。测试覆盖自动发送、防重复、对话绑定恢复、基本信息生成、账号表单处理和批注手势。单元测试使用模拟网页与 Zotero 对象，不访问真实账号；真实 ChatGPT 服务的联网分析结果不属于测试保证。完整结构与验证范围见[开发文档](docs/development.md)。
+
+## 许可
+
+[MIT License](LICENSE) · Copyright (c) 2026 HappyBoy-22
+
+这是独立开发的第三方插件，与 Zotero、OpenAI 无隶属关系。Zotero 和 ChatGPT 名称及商标属于各自权利人。

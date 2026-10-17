@@ -1,0 +1,20 @@
+# Local Zotero profiles, databases, diagnostic dumps and personal fixtures.
+# Only the reviewed unit tests are public.
+/tests/*
+!/tests/*.cjs
+
+# Keep a single reviewed release package in source control.
+/dist/*
+!/dist/chatgpt-reader-0.8.2.xpi
+!/dist/SHA256SUMS
+
+node_modules/
+__pycache__/
+*.py[cod]
+*.log
+.env
+.env.*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

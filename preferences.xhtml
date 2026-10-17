@@ -1,0 +1,31 @@
+<vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" xmlns:html="http://www.w3.org/1999/xhtml" id="chatgpt-reader-prefs" style="max-width:760px;gap:14px;">
+  <html:h2>PDF 批注默认样式</html:h2>
+  <html:p>用于快捷键新建的文本批注、画笔和橡皮擦。保存后，下次使用快捷键即生效，已有批注保持原样。大小单位为 PDF 点（pt），不随页面缩放改变。</html:p>
+  <html:div style="display:grid;grid-template-columns:max-content max-content;gap:12px 24px;align-items:center;">
+    <html:label>文本字号 <html:input id="cr-text-size" type="number" min="6" max="96" step="1" style="width:80px;"/> pt</html:label>
+    <html:label>文本颜色 <html:input id="cr-text-color" type="color"/></html:label>
+    <html:label>画笔粗细 <html:input id="cr-ink-size" type="number" min="0.25" max="20" step="0.25" style="width:80px;"/> pt</html:label>
+    <html:label>画笔颜色 <html:input id="cr-ink-color" type="color"/></html:label>
+    <html:label>橡皮擦直径 <html:input id="cr-eraser-size" type="number" min="2" max="100" step="1" style="width:80px;"/> pt</html:label>
+  </html:div>
+  <hbox><html:button id="cr-save-annotations">保存批注样式</html:button><html:button id="cr-reset-annotations">恢复默认样式</html:button></hbox>
+  <html:p id="cr-annotation-status" role="status"/>
+  <html:h2>论文分析</html:h2>
+  <html:label><html:input id="cr-auto" type="checkbox"/> 首次展开论文聊天时，自动发送 prompt 和基本信息并绑定对话</html:label>
+  <html:label for="cr-prompt">自定义 prompt</html:label>
+  <html:textarea id="cr-prompt" rows="7" style="width:100%;box-sizing:border-box;padding:8px;"/>
+  <html:p>仅发送标题、作者、年份、期刊、DOI 和链接，不读取 PDF 正文、摘要或批注。消息会要求 ChatGPT 联网检索；实际检索能力由当前对话提供。每篇论文独立创建并保存一个对话，首次展开后自动发送，无需手动点击发送。侧栏第一次默认关闭，打开后切换论文会保持打开并恢复对应对话。</html:p>
+  <html:h2>登录</html:h2>
+  <html:p>插件复用 Zotero 内的网页登录状态。可选保存邮箱和密码，尝试在 OpenAI 官方登录页自动填写。验证码、双重验证、第三方登录或网站拦截仍需要手动处理。</html:p>
+  <html:label>邮箱 <html:input id="cr-email" type="email" autocomplete="off" style="width:280px;"/></html:label>
+  <html:label>密码 <html:input id="cr-password" type="password" autocomplete="new-password" placeholder="留空保留已保存的密码" style="width:280px;"/></html:label>
+  <html:label><html:input id="cr-login" type="checkbox"/> 未登录时尝试自动登录</html:label>
+  <html:p id="cr-login-state"/>
+  <hbox>
+    <html:button id="cr-save">保存设置</html:button>
+    <html:button id="cr-open">打开 ChatGPT</html:button>
+    <html:button id="cr-forget">删除已保存的账号密码</html:button>
+  </hbox>
+  <html:p>密码通过 Zotero 密码管理器保存，不写入插件配置文件。若密码管理器不可用，保存会报错，不会改用明文保存。</html:p>
+  <html:p id="cr-status" role="status"/>
+</vbox>

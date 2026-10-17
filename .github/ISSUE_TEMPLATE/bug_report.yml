@@ -1,0 +1,32 @@
+name: 问题反馈
+description: 报告安装、对话绑定、侧栏或批注问题
+body:
+  - type: markdown
+    attributes:
+      value: 请勿提交密码、Cookie、会话令牌或完整 Zotero 配置。截图请遮挡个人信息。
+  - type: input
+    id: versions
+    attributes:
+      label: 环境与版本
+      description: 操作系统、Zotero 版本和插件版本
+      placeholder: Windows 11 / Zotero 10.0.6 / 插件 0.8.2
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 对话问题请说明登录、发送消息、切换论文和重启的先后顺序。
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: 预期与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: 补充信息
+      description: 可粘贴最小错误信息或已遮挡个人信息的截图。
