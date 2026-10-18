@@ -2,11 +2,11 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Zotero 10](https://img.shields.io/badge/Zotero-10.0.x-CC2936.svg)](manifest.json)
-[![Version](https://img.shields.io/badge/version-0.10.1-20856B.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.11.0-20856B.svg)](CHANGELOG.md)
 
 在 Zotero 侧边栏使用 ChatGPT 官网，一边读论文，一边继续这篇论文的对话。使用网页登录，无需 API Key；同时提供 PDF 拖动、缩放和临时批注快捷键。
 
-**[下载插件 v0.10.1](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.10.1.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
+**[下载插件 v0.11.0](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.11.0.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
 
 ## 功能
 
@@ -25,7 +25,7 @@
 
 目前面向 **Zotero 10.0.x**，在 **Windows / Zotero 10.0.6** 环境验证。安装清单不支持 Zotero 6、7、8；其他系统尚未验证。
 
-1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.10.1.xpi)，保留 `.xpi` 后缀，无需解压。
+1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.11.0.xpi)，保留 `.xpi` 后缀，无需解压。
 2. 打开 Zotero，进入 **工具 → 插件 → 齿轮 → 从文件安装插件**，选择下载的文件。
 3. 重启 Zotero，打开一篇 PDF，点击右上角 **ChatGPT** 展开侧栏。
 4. 在侧栏内登录自己的 ChatGPT 账号。登录状态与系统浏览器独立。
@@ -54,7 +54,7 @@
 
 ## 方框与箭头批注
 
-在 PDF 顶部批注工具栏中，画笔右侧有 **空心方框** 和 **箭头** 两个按钮。点击后按住左键拖动；箭头从按下的位置指向松开的位置。再次点击当前按钮或按 **Esc** 退出，也可以直接切换到其他批注工具。
+在 PDF 顶部批注工具栏中，画笔右侧有 **空心方框** 和 **箭头** 两个按钮。点击后按住左键拖动；箭头从按下的位置指向松开的位置。**完成一个方框或箭头后自动回到选择工具**；再次绘制时重新点击按钮。绘制中可按 **Esc** 取消，也可以直接切换其他批注工具。
 
 颜色使用工具栏的颜色选项，初始线宽使用插件设置中的画笔粗细。方框和箭头均保存为原生笔迹，支持 Zotero 撤销 / 重做、移动、删除、橡皮擦与 PDF 导出；普通页面和两侧留白区域都可绘制。按住 Ctrl 仍可拖动页面，按住空格仍可使用临时画笔。
 

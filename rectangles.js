@@ -74,6 +74,8 @@ function attachRectangleView(win,view,internal,owner) {
     if(annotation && !internal._state.readOnly) {
       annotation.pageLabel=view._getPageLabel?.(data.pageIndex,true)||String(data.pageIndex+1);
       try {view._onAddAnnotation(clone(annotation));}catch(error){report(error);}
+      // One shape per activation. Never leave the native ink tool armed.
+      owner.deactivate();owner.sync?.();win.focus();
     }
   };
   const mouse=e=>{
@@ -94,6 +96,7 @@ function attachRectangleView(win,view,internal,owner) {
 function refreshRectangleTools() {
   const live=new Set();
   for(const reader of Zotero.Reader._readers||[]) {
+    try {
     const internal=reader._internalReader, doc=reader._iframeWindow?.document;
     if(!internal?._state?.tool||!doc)continue;
     live.add(reader);
@@ -110,7 +113,10 @@ function refreshRectangleTools() {
       };
       ink.parentElement.addEventListener('click',owner.toolbarClick,true);
       owner.host=ink.parentElement;
-      owner.cleanup=()=>{if(owner.active)owner.deactivate();owner.button?.remove();owner.arrow?.remove();owner.host.removeEventListener('click',owner.toolbarClick,true);for(const c of owner.views.values())c();};
+      owner.cleanup=()=>{
+        const actions=[()=>{if(owner.active)owner.deactivate();},()=>owner.button?.remove(),()=>owner.arrow?.remove(),()=>owner.host.removeEventListener('click',owner.toolbarClick,true),...owner.views.values()];
+        owner.views.clear();for(const action of actions){try{action();}catch(_) {}}
+      };
       rectangleReaders.set(reader,owner);
     }
     if(!owner.button?.isConnected) {
@@ -139,6 +145,7 @@ function refreshRectangleTools() {
       if(owner.arrow){owner.arrow.classList.toggle('active',owner.active&&owner.shape==='arrow');owner.arrow.setAttribute('aria-pressed',String(owner.active&&owner.shape==='arrow'));owner.arrow.disabled=!!internal._state.readOnly;}
       if(owner.active)ink.classList.remove('active');
     }
+    owner.sync=sync;
     sync();
     const views=new Set();
     for(const view of [internal._primaryView,internal._secondaryView]){
@@ -149,7 +156,12 @@ function refreshRectangleTools() {
       if(!owner.views.has(win))owner.views.set(win,attachRectangleView(win,view,internal,owner));
     }
     for(const[win,c]of owner.views)if(!views.has(win)){c();owner.views.delete(win);}
+    } catch(error) {
+      const owner=rectangleReaders.get(reader);rectangleReaders.delete(reader);
+      try {owner?.cleanup();}catch(_) {}
+      if(!String(error).includes('dead object'))report(error);
+    }
   }
-  for(const[reader,owner]of rectangleReaders)if(!live.has(reader)){owner.cleanup();rectangleReaders.delete(reader);}
+  for(const[reader,owner]of rectangleReaders)if(!live.has(reader)){rectangleReaders.delete(reader);try{owner.cleanup();}catch(_) {}}
 }
-function stopRectangleTools(){for(const owner of rectangleReaders.values())owner.cleanup();rectangleReaders.clear();}
+function stopRectangleTools(){const owners=[...rectangleReaders.values()];rectangleReaders.clear();for(const owner of owners){try{owner.cleanup();}catch(_) {}}}

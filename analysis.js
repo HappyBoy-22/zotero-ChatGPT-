@@ -1,5 +1,6 @@
 var preferencePaneID = null;
 var automationActor = false;
+var assistantAPI = null;
 const DEFAULT_PROMPT = '请联网检索这篇论文，并用中文分析研究问题、核心贡献、方法、实验结果与局限。请给出来源链接，区分原文结论和你的推断；无法获取的内容请明确说明。';
 const LOGIN_ORIGIN = 'https://auth.openai.com';
 const LOGIN_REALM = 'Zotero ChatGPT Reader';
@@ -114,17 +115,30 @@ function requestPaperDraft(win) {
   run(() => automationTick(win));
 }
 async function registerAssistant(id,rootURI) {
+  // Settings and shortcuts must not depend on the website actor starting.
+  assistantAPI = {DEFAULT_PROMPT,savedLogin,saveLogin,forgetLogin,buildPaperDraft,ANNOTATION_DEFAULTS,getAnnotationSettings,saveAnnotationSettings,normalizeAnnotationSettings,getMarginWidth,saveMarginWidth,createMarginCopy,open:()=>openChat(),settings:()=>Zotero.Utilities.Internal.openPreferences('chatgpt-reader-preferences')};
+  Zotero.ChatGPTReader = assistantAPI;
+  const active = ()=>!stopped && Zotero.ChatGPTReader === assistantAPI;
+  // A prior interrupted upgrade may have left a registered pane behind.
+  try { Zotero.PreferencePanes.unregister('chatgpt-reader-preferences'); } catch (_) {}
+  try {
+    const pane = await Zotero.PreferencePanes.register({pluginID:id,id:'chatgpt-reader-preferences',label:'ChatGPT 论文助手',src:rootURI+'preferences.xhtml',scripts:[rootURI+'preferences.js'],image:'chrome://zotero/skin/20/universal/cog.svg'});
+    if (!active()) return;
+    preferencePaneID = pane;
+  } catch(error) { report(error); }
+  if (!active()) return;
   const resources = Services.io.getProtocolHandler('resource').QueryInterface(Components.interfaces.nsIResProtocolHandler);
   resources.setSubstitution('chatgpt-reader',Services.io.newURI(rootURI));
+  try { ChromeUtils.unregisterWindowActor('ReaderAssistant'); } catch (_) {}
   ChromeUtils.registerWindowActor('ReaderAssistant',{
     child:{esModuleURI:'resource://chatgpt-reader/ReaderChild.sys.mjs'},
     matches:['https://chatgpt.com/*','https://auth.openai.com/*'],allFrames:false
   });
   automationActor = true;
-  preferencePaneID = await Zotero.PreferencePanes.register({pluginID:id,id:'chatgpt-reader-preferences',label:'ChatGPT 论文助手',src:rootURI+'preferences.xhtml',scripts:[rootURI+'preferences.js'],image:'chrome://zotero/skin/20/universal/cog.svg'});
-  Zotero.ChatGPTReader = {DEFAULT_PROMPT,savedLogin,saveLogin,forgetLogin,buildPaperDraft,ANNOTATION_DEFAULTS,getAnnotationSettings,saveAnnotationSettings,normalizeAnnotationSettings,getMarginWidth,saveMarginWidth,createMarginCopy,open:()=>openChat(),settings:()=>Zotero.Utilities.Internal.openPreferences('chatgpt-reader-preferences')};
 }
 function unregisterAssistant() {
+  // A late shutdown from the old version must not erase the new API/pane.
+  if (Zotero.ChatGPTReader !== assistantAPI) return;
   if (preferencePaneID) Zotero.PreferencePanes.unregister(preferencePaneID);
   preferencePaneID = null;
   if (automationActor) {
@@ -133,4 +147,5 @@ function unregisterAssistant() {
   }
   automationActor = false;
   delete Zotero.ChatGPTReader;
+  assistantAPI = null;
 }

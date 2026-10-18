@@ -194,6 +194,7 @@ function attachPDFGestures(win,internal = null,view = null) {
 function refreshPDFGestures() {
   const live = new Set();
   for (const reader of Zotero.Reader._readers || []) {
+    try {
     const internal = reader._internalReader;
     for (const view of [internal?._primaryView,internal?._secondaryView]) {
       const win = view?._iframeWindow;
@@ -206,9 +207,10 @@ function refreshPDFGestures() {
         if (cleanup) { pdfGestureBindings.set(win,cleanup); Zotero.debug('ChatGPT Reader: PDF gesture listeners attached'); }
       }
     }
+    } catch(error) { if (!String(error).includes('dead object')) report(error); }
   }
   for (const [win,cleanup] of pdfGestureBindings) {
-    if (!live.has(win)) { cleanup(); pdfGestureBindings.delete(win); }
+    if (!live.has(win)) { pdfGestureBindings.delete(win); try { cleanup(); } catch (_) {} }
   }
   // Optional shape toolbar failures must never prevent keyboard listeners.
   if(typeof refreshRectangleTools==='function'){
@@ -221,8 +223,9 @@ function startPDFGestures() {
   pdfGestureTimer = setInterval(() => { try { refreshPDFGestures(); } catch(error) { report(error); } },600);
 }
 function stopPDFGestures() {
-  if(typeof stopRectangleTools==='function')stopRectangleTools();
   clearInterval(pdfGestureTimer); pdfGestureTimer = null;
-  for (const cleanup of pdfGestureBindings.values()) cleanup();
+  const cleanups = [...pdfGestureBindings.values()];
   pdfGestureBindings.clear();
+  if(typeof stopRectangleTools==='function') { try { stopRectangleTools(); } catch(error) { report(error); } }
+  for (const cleanup of cleanups) { try { cleanup(); } catch(error) { report(error); } }
 }

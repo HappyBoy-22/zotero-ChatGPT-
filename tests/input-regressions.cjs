@@ -19,6 +19,7 @@ assert.equal(view.action,null,'clear the native capture-phase ink action before 
 view.action={type:'ink'};handlers.get('mousedown')(event(50,60));assert.equal(view.action,null,'compatibility mouse event cannot re-arm native ink');
 handlers.get('pointermove')(event(150,160));handlers.get('pointerup')(event(150,160));
 assert.equal(view.action,null,'no stale native action after shape release');assert.equal(annotations.length,1);assert.ok(cleared>=3);
+assert.equal(owner.active,false,'shape is one shot and leaves drawing mode');owner.active=true;
 const hover=event(190,210);handlers.get('pointermove')(hover);assert.equal(annotations.length,1);assert.equal(view.action,null);
 shortcuts.space=true;view.action={type:'ink'};const reserved=event(60,70);handlers.get('pointerdown')(reserved);assert.ok(!reserved.consumed,'temporary freehand still receives events');assert.ok(view.action);
 shortcuts.space=false;view.action={type:'ink'};handlers.get('pointerdown')(event(40,40));cleanup.cancel();assert.equal(view.action,null,'cancel clears native action too');assert.ok(removed>=2);

@@ -3,6 +3,7 @@ var mainWindows = new Set();
 var stopped = false;
 var generation = 0;
 var extensionModulesLoaded = false;
+var runtimeHandle = null;
 const PREFIX = 'chatgpt-reader-';
 const CHATGPT_HOME = 'https://chatgpt.com/';
 
@@ -107,6 +108,12 @@ async function startup({ id, rootURI } = {}) {
     extensionModulesLoaded = true;
   }
   marginRootURI = rootURI;
+  const previous = Zotero.__chatgptReaderRuntime;
+  if (previous && previous !== runtimeHandle) {
+    try { previous.dispose(); } catch(error) { report(error); }
+  }
+  runtimeHandle = {version:'0.11.0',dispose:shutdown};
+  Zotero.__chatgptReaderRuntime = runtimeHandle;
   // This local build has no update server. Keep automatic update checks disabled.
   if (id) {
     const { AddonManager } = ChromeUtils.importESModule('resource://gre/modules/AddonManager.sys.mjs');
@@ -117,18 +124,22 @@ async function startup({ id, rootURI } = {}) {
   if (stopped || generation !== startedGeneration) return;
   try { await registerAssistant(id,rootURI); }
   catch (error) { report(error); }
-  for (const win of Zotero.getMainWindows()) onMainWindowLoad({ window: win });
-  watchReaderWindows();
-  startPDFGestures();
+  if (stopped || generation !== startedGeneration || Zotero.__chatgptReaderRuntime !== runtimeHandle) return;
+  for (const win of Zotero.getMainWindows()) { try { onMainWindowLoad({ window: win }); } catch(error) { report(error); } }
+  try { watchReaderWindows(); } catch(error) { report(error); }
+  try { startPDFGestures(); } catch(error) { report(error); }
 }
 
 function shutdown() {
   stopped = true;
   generation++;
-  if (typeof stopPDFGestures === 'function') stopPDFGestures();
-  stopReaderWindows();
-  if (typeof unregisterAssistant === 'function') unregisterAssistant();
-  for (const win of [...mainWindows]) onMainWindowUnload({ window: win });
+  const cleanup = action=>{try {action();}catch(error){report(error);}};
+  if (typeof stopPDFGestures === 'function') cleanup(stopPDFGestures);
+  if (typeof stopReaderWindows === 'function') cleanup(stopReaderWindows);
+  if (typeof unregisterAssistant === 'function') cleanup(unregisterAssistant);
+  for (const win of [...mainWindows]) cleanup(()=>onMainWindowUnload({ window: win }));
+  mainWindows.clear();
+  if (Zotero.__chatgptReaderRuntime === runtimeHandle) delete Zotero.__chatgptReaderRuntime;
 }
 function install() {}
 function uninstall() {}
