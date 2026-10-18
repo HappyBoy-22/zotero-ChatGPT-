@@ -190,6 +190,7 @@ function attachPDFGestures(win,internal = null,view = null) {
   return cleanup;
 }
 function refreshPDFGestures() {
+  if(typeof refreshRectangleTools==='function')refreshRectangleTools();
   const live = new Set();
   for (const reader of Zotero.Reader._readers || []) {
     const internal = reader._internalReader;
@@ -215,6 +216,7 @@ function startPDFGestures() {
   pdfGestureTimer = setInterval(() => { try { refreshPDFGestures(); } catch(error) { report(error); } },600);
 }
 function stopPDFGestures() {
+  if(typeof stopRectangleTools==='function')stopRectangleTools();
   clearInterval(pdfGestureTimer); pdfGestureTimer = null;
   for (const cleanup of pdfGestureBindings.values()) cleanup();
   pdfGestureBindings.clear();

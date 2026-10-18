@@ -103,7 +103,7 @@ async function startup({ id, rootURI } = {}) {
   generation++;
   const startedGeneration = generation;
   if (!extensionModulesLoaded) {
-    for (const file of ['sidebar.js','bindings.js','analysis.js','autochat.js','gestures.js','margins.js']) Services.scriptloader.loadSubScriptWithOptions(rootURI + file, { target:this, ignoreCache:true });
+    for (const file of ['sidebar.js','bindings.js','analysis.js','autochat.js','gestures.js','margins.js','rectangles.js']) Services.scriptloader.loadSubScriptWithOptions(rootURI + file, { target:this, ignoreCache:true });
     extensionModulesLoaded = true;
   }
   marginRootURI = rootURI;

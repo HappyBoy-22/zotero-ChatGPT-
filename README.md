@@ -2,11 +2,11 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Zotero 10](https://img.shields.io/badge/Zotero-10.0.x-CC2936.svg)](manifest.json)
-[![Version](https://img.shields.io/badge/version-0.9.0-20856B.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.10.0-20856B.svg)](CHANGELOG.md)
 
 在 Zotero 侧边栏使用 ChatGPT 官网，一边读论文，一边继续这篇论文的对话。使用网页登录，无需 API Key；同时提供 PDF 拖动、缩放和临时批注快捷键。
 
-**[下载插件 v0.9.0](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.9.0.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
+**[下载插件 v0.10.0](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.10.0.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
 
 ## 功能
 
@@ -17,6 +17,7 @@
 | 自定义分析 prompt | 首次展开时自动发送 prompt、标题、作者、年份、期刊 / 会议、DOI 和链接 |
 | 保持阅读状态 | 侧栏初次默认关闭；展开后切换论文保持展开，并切换到对应对话 |
 | 两侧留白笔记 | 一键创建加宽 PDF 副本，保留原文件，在空白区使用原生文字和画笔批注 |
+| 方框与箭头批注 | 画笔旁新增方框和箭头按钮，拖动绘制，按原生笔迹保存 |
 | PDF 操作快捷键 | Ctrl + 滚轮缩放、Ctrl + 左键拖动、临时文本 / 画笔 / 橡皮擦 |
 | 批注默认样式 | 设置文字字号和颜色、画笔粗细和颜色、橡皮擦直径 |
 
@@ -24,7 +25,7 @@
 
 目前面向 **Zotero 10.0.x**，在 **Windows / Zotero 10.0.6** 环境验证。安装清单不支持 Zotero 6、7、8；其他系统尚未验证。
 
-1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.9.0.xpi)，保留 `.xpi` 后缀，无需解压。
+1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.10.0.xpi)，保留 `.xpi` 后缀，无需解压。
 2. 打开 Zotero，进入 **工具 → 插件 → 齿轮 → 从文件安装插件**，选择下载的文件。
 3. 重启 Zotero，打开一篇 PDF，点击右上角 **ChatGPT** 展开侧栏。
 4. 在侧栏内登录自己的 ChatGPT 账号。登录状态与系统浏览器独立。
@@ -50,6 +51,12 @@
 打开原 PDF，点击顶部 **两侧留白**，创建并打开同一论文下的加宽副本。默认左右各 **50 毫米**，可在 **编辑 → 设置 → ChatGPT 论文助手 → 论文两侧留白** 中调整为 10–150 毫米，并单独保存。
 
 留白区域可以直接使用下方的文字、画笔和橡皮擦快捷键。原 PDF 与原批注保留；副本带有创建时嵌入的原批注，后续新增笔记独立保存。相同原 PDF 和宽度再次点击会打开已有副本，避免重复生成。副本是创建时的快照，不自动跟随原文件更新。处理在本机完成，不上传论文。
+
+## 方框与箭头批注
+
+在 PDF 顶部批注工具栏中，画笔右侧有 **空心方框** 和 **箭头** 两个按钮。点击后按住左键拖动；箭头从按下的位置指向松开的位置。再次点击当前按钮或按 **Esc** 退出，也可以直接切换到其他批注工具。
+
+颜色使用工具栏的颜色选项，初始线宽使用插件设置中的画笔粗细。方框和箭头均保存为原生笔迹，支持 Zotero 撤销 / 重做、移动、删除、橡皮擦与 PDF 导出；普通页面和两侧留白区域都可绘制。按住 Ctrl 仍可拖动页面，按住空格仍可使用临时画笔。
 
 ## PDF 快捷键
 

@@ -26,6 +26,7 @@ python build.py
 | `autochat.js` | 自动初始化、防重复和对话链接捕获 |
 | `analysis.js` | 基本信息生成、设置注册与密码管理器 |
 | `ReaderChild.sys.mjs` | 官网输入框、发送及登录表单的内容进程操作 |
+| `rectangles.js` | 原生工具栏方框 / 箭头按钮、拖动预览及原生笔迹保存 |
 | `margins.js` | 生成保留原文件与嵌入批注的左右留白 PDF 副本 |
 | `gestures.js` | PDF 缩放、拖动、批注手势与默认样式 |
 | `preferences.xhtml` / `preferences.js` | 原生设置页面及保存逻辑 |
@@ -37,10 +38,11 @@ python build.py
 
 ## 测试范围
 
-运行 `node scripts/test.cjs` 会执行全部八个测试文件：
+运行 `node scripts/test.cjs` 会执行全部九个测试文件：
 
 | 测试 | 主要覆盖 |
 | --- | --- |
+| `rectangles.cjs` | 方框闭合路径、箭头方向与箭头头部、反向拖动、页边裁切、样式与点击不创建 |
 | `margins.cjs` | 非零裁切原点、四种旋转、页面边界、损坏文件与源文件不变 |
 | `actor.cjs` | 官网编辑器与账号表单处理 |
 | `analysis.cjs` | 基本信息、prompt、禁止全文读取及切换保护 |
@@ -65,7 +67,7 @@ GitHub Actions 在 Windows 和 Linux 执行单元测试、构建，并上传 XPI
 3. 运行测试和构建，并完成真实 Zotero 的交互回归。
 4. 提交新版 XPI 与校验值。旧包保留于 Git 历史；工作目录中的其他历史包不会被自动上传。
 
-校验文件可用 PowerShell 的 `Get-FileHash .\dist\chatgpt-reader-0.9.0.xpi -Algorithm SHA256` 或 Linux 的 `sha256sum -c SHA256SUMS`（在 `dist/` 内运行）核对。
+校验文件可用 PowerShell 的 `Get-FileHash .\dist\chatgpt-reader-0.10.0.xpi -Algorithm SHA256` 或 Linux 的 `sha256sum -c SHA256SUMS`（在 `dist/` 内运行）核对。
 
 ## 贡献
 
