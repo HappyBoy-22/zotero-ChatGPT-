@@ -2,11 +2,11 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Zotero 10](https://img.shields.io/badge/Zotero-10.0.x-CC2936.svg)](manifest.json)
-[![Version](https://img.shields.io/badge/version-0.8.2-20856B.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.9.0-20856B.svg)](CHANGELOG.md)
 
 在 Zotero 侧边栏使用 ChatGPT 官网，一边读论文，一边继续这篇论文的对话。使用网页登录，无需 API Key；同时提供 PDF 拖动、缩放和临时批注快捷键。
 
-**[下载插件 v0.8.2](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.8.2.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
+**[下载插件 v0.9.0](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.9.0.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
 
 ## 功能
 
@@ -16,6 +16,7 @@
 | 一篇论文一个对话 | 首次发送后自动保存对话链接，返回论文时恢复原对话 |
 | 自定义分析 prompt | 首次展开时自动发送 prompt、标题、作者、年份、期刊 / 会议、DOI 和链接 |
 | 保持阅读状态 | 侧栏初次默认关闭；展开后切换论文保持展开，并切换到对应对话 |
+| 两侧留白笔记 | 一键创建加宽 PDF 副本，保留原文件，在空白区使用原生文字和画笔批注 |
 | PDF 操作快捷键 | Ctrl + 滚轮缩放、Ctrl + 左键拖动、临时文本 / 画笔 / 橡皮擦 |
 | 批注默认样式 | 设置文字字号和颜色、画笔粗细和颜色、橡皮擦直径 |
 
@@ -23,7 +24,7 @@
 
 目前面向 **Zotero 10.0.x**，在 **Windows / Zotero 10.0.6** 环境验证。安装清单不支持 Zotero 6、7、8；其他系统尚未验证。
 
-1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.8.2.xpi)，保留 `.xpi` 后缀，无需解压。
+1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.9.0.xpi)，保留 `.xpi` 后缀，无需解压。
 2. 打开 Zotero，进入 **工具 → 插件 → 齿轮 → 从文件安装插件**，选择下载的文件。
 3. 重启 Zotero，打开一篇 PDF，点击右上角 **ChatGPT** 展开侧栏。
 4. 在侧栏内登录自己的 ChatGPT 账号。登录状态与系统浏览器独立。
@@ -43,6 +44,12 @@
 自动初始化**不上传 PDF，也不提取正文、摘要、笔记或批注**。ChatGPT 能否找到原文、进行联网搜索以及完成分析，取决于当前账号、模型、网站能力和可访问的来源。
 
 已有对话可在 **对话管理** 中恢复，请使用自己的 `https://chatgpt.com/c/…` 对话链接，分享链接 `/share/…` 不适用。绑定保存在本机，不随 Zotero 同步到其他设备。更多操作见[使用指南](docs/usage.md)。
+
+## 论文两侧留白
+
+打开原 PDF，点击顶部 **两侧留白**，创建并打开同一论文下的加宽副本。默认左右各 **50 毫米**，可在 **编辑 → 设置 → ChatGPT 论文助手 → 论文两侧留白** 中调整为 10–150 毫米，并单独保存。
+
+留白区域可以直接使用下方的文字、画笔和橡皮擦快捷键。原 PDF 与原批注保留；副本带有创建时嵌入的原批注，后续新增笔记独立保存。相同原 PDF 和宽度再次点击会打开已有副本，避免重复生成。副本是创建时的快照，不自动跟随原文件更新。处理在本机完成，不上传论文。
 
 ## PDF 快捷键
 
@@ -85,10 +92,12 @@ node scripts/test.cjs
 python build.py
 ```
 
-产物位于 `dist/`。测试覆盖自动发送、防重复、对话绑定恢复、基本信息生成、账号表单处理和批注手势。单元测试使用模拟网页与 Zotero 对象，不访问真实账号；真实 ChatGPT 服务的联网分析结果不属于测试保证。完整结构与验证范围见[开发文档](docs/development.md)。
+产物位于 `dist/`。测试覆盖自动发送、防重复、对话绑定恢复、基本信息生成、账号表单处理和批注手势。单元测试使用真实 PDF 处理库及模拟网页与 Zotero 对象，不访问真实账号；真实 ChatGPT 服务的联网分析结果不属于测试保证。完整结构与验证范围见[开发文档](docs/development.md)。
 
 ## 许可
 
 [MIT License](LICENSE) · Copyright (c) 2026 HappyBoy-22
 
 这是独立开发的第三方插件，与 Zotero、OpenAI 无隶属关系。Zotero 和 ChatGPT 名称及商标属于各自权利人。
+
+第三方组件：内置 [pdf-lib](https://github.com/Hopding/pdf-lib) 1.17.1（MIT），详见 [依赖声明](THIRD_PARTY_NOTICES.md)。

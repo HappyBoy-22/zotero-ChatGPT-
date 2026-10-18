@@ -81,6 +81,7 @@ function onMainWindowLoad({ window: win }) {
   menu.setAttribute('label', 'ChatGPT 论文助手');
   const popup = doc.createXULElement('menupopup');
   popup.append(
+    button(doc, '打开 / 创建两侧留白笔记副本', () => openMarginCopy(win), 'menuitem'),
     button(doc, '显示 / 收起 ChatGPT 侧边栏', () => toggleSidebar(win), 'menuitem'),
     button(doc, '复制论文信息到侧边栏', () => copyContext(false, win), 'menuitem'),
     button(doc, '复制信息与批注到侧边栏', () => copyContext(true, win), 'menuitem')
@@ -102,9 +103,10 @@ async function startup({ id, rootURI } = {}) {
   generation++;
   const startedGeneration = generation;
   if (!extensionModulesLoaded) {
-    for (const file of ['sidebar.js','bindings.js','analysis.js','autochat.js','gestures.js']) Services.scriptloader.loadSubScriptWithOptions(rootURI + file, { target:this, ignoreCache:true });
+    for (const file of ['sidebar.js','bindings.js','analysis.js','autochat.js','gestures.js','margins.js']) Services.scriptloader.loadSubScriptWithOptions(rootURI + file, { target:this, ignoreCache:true });
     extensionModulesLoaded = true;
   }
+  marginRootURI = rootURI;
   // This local build has no update server. Keep automatic update checks disabled.
   if (id) {
     const { AddonManager } = ChromeUtils.importESModule('resource://gre/modules/AddonManager.sys.mjs');

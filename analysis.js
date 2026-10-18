@@ -122,7 +122,7 @@ async function registerAssistant(id,rootURI) {
   });
   automationActor = true;
   preferencePaneID = await Zotero.PreferencePanes.register({pluginID:id,id:'chatgpt-reader-preferences',label:'ChatGPT 论文助手',src:rootURI+'preferences.xhtml',scripts:[rootURI+'preferences.js'],image:'chrome://zotero/skin/20/universal/cog.svg'});
-  Zotero.ChatGPTReader = {DEFAULT_PROMPT,savedLogin,saveLogin,forgetLogin,buildPaperDraft,ANNOTATION_DEFAULTS,getAnnotationSettings,saveAnnotationSettings,normalizeAnnotationSettings,open:()=>openChat(),settings:()=>Zotero.Utilities.Internal.openPreferences('chatgpt-reader-preferences')};
+  Zotero.ChatGPTReader = {DEFAULT_PROMPT,savedLogin,saveLogin,forgetLogin,buildPaperDraft,ANNOTATION_DEFAULTS,getAnnotationSettings,saveAnnotationSettings,normalizeAnnotationSettings,getMarginWidth,saveMarginWidth,createMarginCopy,open:()=>openChat(),settings:()=>Zotero.Utilities.Internal.openPreferences('chatgpt-reader-preferences')};
 }
 function unregisterAssistant() {
   if (preferencePaneID) Zotero.PreferencePanes.unregister(preferencePaneID);

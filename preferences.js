@@ -7,6 +7,11 @@ setTimeout(function initReaderPreferences() {
   const api = Zotero.ChatGPTReader;
   const $ = id => document.getElementById('cr-' + id);
   const get = (key,fallback) => Zotero.Prefs.get('chatgptReader.' + key) ?? fallback;
+  $('margin-width').value = api.getMarginWidth();
+  $('save-margins').addEventListener('click',()=>{
+    try { api.saveMarginWidth($('margin-width').value); $('margin-status').textContent = '已保存。回到原 PDF 点击“两侧留白”即可创建或打开副本。'; }
+    catch (e) { $('margin-status').textContent = e.message; }
+  });
   const annotationFields = {textSize:'text-size',textColor:'text-color',inkSize:'ink-size',inkColor:'ink-color',eraserSize:'eraser-size'};
   const fillAnnotations = settings => { for (const [key,id] of Object.entries(annotationFields)) $(id).value = settings[key]; };
   const readAnnotations = () => Object.fromEntries(Object.entries(annotationFields).map(([key,id])=>[key,$(id).value]));

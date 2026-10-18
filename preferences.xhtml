@@ -10,6 +10,12 @@
   </html:div>
   <hbox><html:button id="cr-save-annotations">保存批注样式</html:button><html:button id="cr-reset-annotations">恢复默认样式</html:button></hbox>
   <html:p id="cr-annotation-status" role="status"/>
+  <html:h2>论文两侧留白</html:h2>
+  <html:p>创建同一论文下的加宽 PDF 副本，原文件与原批注保留。两侧空白可直接使用文字和画笔快捷键做笔记。已有批注以嵌入批注保留在副本中。</html:p>
+  <html:label>每侧宽度 <html:input id="cr-margin-width" type="number" min="10" max="150" step="1" style="width:80px;"/> 毫米</html:label>
+  <hbox><html:button id="cr-save-margins">保存留白宽度</html:button></hbox>
+  <html:p id="cr-margin-status" role="status"/>
+  <html:p>打开原 PDF 后点击工具栏“两侧留白”。相同宽度再次点击会打开已有副本，不会重复创建。副本与原文件后续的批注各自保存，不自动互相更新。</html:p>
   <html:h2>论文分析</html:h2>
   <html:label><html:input id="cr-auto" type="checkbox"/> 首次展开论文聊天时，自动发送 prompt 和基本信息并绑定对话</html:label>
   <html:label for="cr-prompt">自定义 prompt</html:label>

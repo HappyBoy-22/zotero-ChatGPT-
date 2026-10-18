@@ -3,7 +3,7 @@
 ## 环境
 
 - Python 3.10+：使用标准库打包 XPI，无需 pip 依赖。
-- Node.js 22：运行单元测试，无需 npm 依赖。
+- Node.js 22：运行单元测试，无需安装 npm 依赖。
 - Zotero 10.0.x：本地交互验证，目前已验证 Windows / Zotero 10.0.6。
 
 ```sh
@@ -26,6 +26,7 @@ python build.py
 | `autochat.js` | 自动初始化、防重复和对话链接捕获 |
 | `analysis.js` | 基本信息生成、设置注册与密码管理器 |
 | `ReaderChild.sys.mjs` | 官网输入框、发送及登录表单的内容进程操作 |
+| `margins.js` | 生成保留原文件与嵌入批注的左右留白 PDF 副本 |
 | `gestures.js` | PDF 缩放、拖动、批注手势与默认样式 |
 | `preferences.xhtml` / `preferences.js` | 原生设置页面及保存逻辑 |
 | `tests/*.cjs` | 使用 Node 内置模块的模拟测试 |
@@ -36,10 +37,11 @@ python build.py
 
 ## 测试范围
 
-运行 `node scripts/test.cjs` 会执行全部七个测试文件：
+运行 `node scripts/test.cjs` 会执行全部八个测试文件：
 
 | 测试 | 主要覆盖 |
 | --- | --- |
+| `margins.cjs` | 非零裁切原点、四种旋转、页面边界、损坏文件与源文件不变 |
 | `actor.cjs` | 官网编辑器与账号表单处理 |
 | `analysis.cjs` | 基本信息、prompt、禁止全文读取及切换保护 |
 | `autochat.cjs` | 初始化记录、恢复、防重复与发送中切换 |
@@ -63,8 +65,12 @@ GitHub Actions 在 Windows 和 Linux 执行单元测试、构建，并上传 XPI
 3. 运行测试和构建，并完成真实 Zotero 的交互回归。
 4. 提交新版 XPI 与校验值。旧包保留于 Git 历史；工作目录中的其他历史包不会被自动上传。
 
-校验文件可用 PowerShell 的 `Get-FileHash .\dist\chatgpt-reader-0.8.2.xpi -Algorithm SHA256` 或 Linux 的 `sha256sum -c SHA256SUMS`（在 `dist/` 内运行）核对。
+校验文件可用 PowerShell 的 `Get-FileHash .\dist\chatgpt-reader-0.9.0.xpi -Algorithm SHA256` 或 Linux 的 `sha256sum -c SHA256SUMS`（在 `dist/` 内运行）核对。
 
 ## 贡献
 
 请先阅读 [贡献指南](../CONTRIBUTING.md)。仓库仅包含插件源码、审查过的测试与发行文件；不要提交 Zotero 配置目录、论文库、账号信息、Cookie、会话令牌或个人聊天内容。
+
+## 第三方依赖
+
+运行时内置 pdf-lib 1.17.1（MIT），仅在创建留白副本时本地加载，无 CDN 请求。来源、许可证及校验值见 [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)。

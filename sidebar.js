@@ -212,6 +212,10 @@ function addSidebarToggle(win) {
   node.setAttribute('style', 'padding:4px 8px;min-width:72px!important;width:72px!important;flex-shrink:0;');
   const target = doc.getElementById('zotero-pq-buttons') || doc.getElementById('zotero-tabs-toolbar') || doc.getElementById('main-menubar') || doc.querySelector('menubar');
   target?.prepend(node);
+  const margins = button(doc,'两侧留白',()=>openMarginCopy(win));
+  margins.id = PREFIX+'margins';
+  margins.setAttribute('tooltiptext','打开 / 创建可批注的左右留白 PDF 副本');
+  target?.prepend(margins);
 }
 
 function cleanupSidebar(win) {
@@ -230,6 +234,7 @@ function cleanupSidebar(win) {
     sidebars.delete(win);
   }
   win.document.getElementById(PREFIX + 'toggle')?.remove();
+  win.document.getElementById(PREFIX + 'margins')?.remove();
 }
 
 function watchReaderWindows() {
