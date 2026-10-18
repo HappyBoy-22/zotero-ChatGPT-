@@ -22,3 +22,24 @@ assert.equal(env.arrowAnnotation([0,0],[0,0],[0,0,100,100],0,'#000000',2),null);
 const clippedArrow=env.arrowAnnotation([50,50],[500,500],[0,0,100,100],0,'#000000',2);
 for(const path of clippedArrow.position.paths)assert.ok(path.every(v=>v>=0&&v<=100));
 console.log('PASS: arrow direction, reverse/vertical/diagonal drags, arrowhead geometry, page boundaries and empty-click rejection');
+
+const outline=rect([-30,60],[40,120]),plain=v=>JSON.parse(JSON.stringify(v));
+const bounds=position=>plain(env.rectangleBounds({type:'ink',position}));
+assert.deepEqual(bounds(outline.position),[-30,60,40,120]);
+for(const [dir,dx,dy,expected]of [
+  ['tr',30,0,[-30,60,70,120]],['tr',0,25,[-30,60,40,145]],
+  ['bl',-20,-10,[-50,50,40,120]],['tl',-10,40,[-40,60,40,160]],
+  ['br',40,-30,[-30,30,80,120]],['tr',-500,-500,[-30,60,-29,61]]
+]){
+  const resized=env.resizeRectanglePosition(outline,dir,dx,dy);
+  assert.deepEqual(bounds(resized),expected);
+  assert.equal(resized.width,2.5,'resizing leaves stroke width unchanged');
+  assert.equal(resized.pageIndex,3);assert.deepEqual(bounds(outline.position),[-30,60,40,120],'source position is immutable');
+}
+for(const paths of [[[0,0,20,10,40,20,0,30,0,0]],[[0,0,40,30,0,30,40,0,0,0]],[[0,0,20,0,20,20,0,20]],[[0,0,20,0,20,20,0,20,0,0],[3,3]]]){
+  assert.equal(env.resizeRectanglePosition({type:'ink',position:{paths}},'tr',10,20),null,'freehand, crossed paths and erased/multiple paths retain native behavior');
+}
+assert.equal(env.resizeRectanglePosition(clippedArrow,'tr',10,20),null);
+assert.equal(env.resizeRectanglePosition({...outline,type:'image'},'tr',10,20),null);
+assert.equal(env.resizeRectanglePosition(outline,'tr',NaN,20),null);
+console.log('PASS: independent width/height and all corner directions, minimum size, old outlines, fixed line width and unrelated annotation exclusion');

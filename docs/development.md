@@ -42,9 +42,9 @@ python build.py
 
 | 测试 | 主要覆盖 |
 | --- | --- |
-| `rectangles.cjs` | 方框闭合路径、箭头方向与箭头头部、反向拖动、页边裁切、样式与点击不创建 |
+| `rectangles.cjs` | 方框闭合路径、旧方框识别、独立宽高缩放、箭头方向与箭头头部、反向拖动、页边裁切、样式与点击不创建 |
 | `lifecycle.cjs` | 已关闭窗口清理失败隔离、定时器回收、设置独立注册与旧实例所有权保护 |
-| `input-regressions.cjs` | 绘图指针清理、兼容鼠标事件、PDF 焦点、悬停与可选工具初始化失败隔离 |
+| `input-regressions.cjs` | 方框缩放事件拦截与原生提交、绘图指针清理、兼容鼠标事件、PDF 焦点、悬停与可选工具初始化失败隔离 |
 | `margins.cjs` | 非零裁切原点、四种旋转、页面边界、损坏文件与源文件不变 |
 | `actor.cjs` | 官网编辑器与账号表单处理 |
 | `analysis.cjs` | 基本信息、prompt、禁止全文读取及切换保护 |
@@ -69,7 +69,7 @@ GitHub Actions 在 Windows 和 Linux 执行单元测试、构建，并上传 XPI
 3. 运行测试和构建，并完成真实 Zotero 的交互回归。
 4. 提交新版 XPI 与校验值。旧包保留于 Git 历史；工作目录中的其他历史包不会被自动上传。
 
-校验文件可用 PowerShell 的 `Get-FileHash .\dist\chatgpt-reader-0.11.0.xpi -Algorithm SHA256` 或 Linux 的 `sha256sum -c SHA256SUMS`（在 `dist/` 内运行）核对。
+校验文件可用 PowerShell 的 `Get-FileHash .\dist\chatgpt-reader-0.11.1.xpi -Algorithm SHA256` 或 Linux 的 `sha256sum -c SHA256SUMS`（在 `dist/` 内运行）核对。
 
 ## 贡献
 

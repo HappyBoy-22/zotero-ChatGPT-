@@ -23,6 +23,23 @@ assert.equal(owner.active,false,'shape is one shot and leaves drawing mode');own
 const hover=event(190,210);handlers.get('pointermove')(hover);assert.equal(annotations.length,1);assert.equal(view.action,null);
 shortcuts.space=true;view.action={type:'ink'};const reserved=event(60,70);handlers.get('pointerdown')(reserved);assert.ok(!reserved.consumed,'temporary freehand still receives events');assert.ok(view.action);
 shortcuts.space=false;view.action={type:'ink'};handlers.get('pointerdown')(event(40,40));cleanup.cancel();assert.equal(view.action,null,'cancel clears native action too');assert.ok(removed>=2);
+owner.active=false;
+const rectangle=env.rectangleAnnotation([20,30],[120,90],[0,0,300,300],0,'#ff0000',2);
+view.action={type:'resize',dir:'tr',annotation:rectangle};
+view.pointerDownPosition={pageIndex:0,rects:[[125,95,125,95]]};
+view.pointerEventToAltPosition=e=>({pageIndex:0,rects:[[e.clientX,e.clientY,e.clientX,e.clientY]]});
+let renders=0;view._render=()=>renders++;
+const horizontal=event(175,95);handlers.get('pointermove')(horizontal);
+assert.ok(horizontal.consumed,'capture blocks native proportional transformation');assert.ok(view.action.triggered);
+assert.deepEqual(JSON.parse(JSON.stringify(env.rectangleBounds({type:'ink',position:view.action.position}))),[20,30,170,90]);
+const release=event(185,95);handlers.get('pointerup')(release);
+assert.ok(!release.consumed,'native pointerup still commits and records undo');
+assert.deepEqual(JSON.parse(JSON.stringify(env.rectangleBounds({type:'ink',position:view.action.position}))),[20,30,180,90],'final release position included');
+assert.equal(view.action.position.width,2);assert.ok(renders>=2);
+view.action={type:'resize',dir:'tr',annotation:annotations[0]};
+const arrowMove=event(190,100);handlers.get('pointermove')(arrowMove);assert.ok(!arrowMove.consumed,'arrow uses native resizing');
+view.action={type:'resize',dir:'tr',annotation:{...rectangle,readOnly:true}};
+const readOnlyMove=event(190,100);handlers.get('pointermove')(readOnlyMove);assert.ok(!readOnlyMove.consumed,'respect annotation permissions');
 cleanup();assert.equal(handlers.size,0);
 console.log('PASS: native capture action cleared on shape down/up/cancel and compatibility mouse events, PDF focus, hover safety and Space passthrough');
 

@@ -23,6 +23,37 @@ function rectangleAnnotation(start,end,bounds,pageIndex,color,width) {
   return {type:'ink',color,position:{pageIndex,width,paths:[[x1,y1,x2,y1,x2,y2,x1,y2,x1,y1]]},
     sortIndex:String(pageIndex).padStart(5,'0')+'|000000|'+String(Math.max(0,Math.floor(bounds[3]-y2))).padStart(5,'0')};
 }
+// Recognize earlier versions' outlines too, without changing arbitrary ink.
+function rectangleBounds(annotation) {
+  const paths=annotation?.position?.paths;
+  if(annotation?.type!=='ink'||paths?.length!==1||paths[0].length!==10)return null;
+  const p=paths[0];
+  if(!p.every(Number.isFinite))return null;
+  const near=(a,b)=>Math.abs(a-b)<0.02;
+  if(!near(p[0],p[8])||!near(p[1],p[9]))return null;
+  const xs=[p[0],p[2],p[4],p[6]],ys=[p[1],p[3],p[5],p[7]];
+  const b=[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)];
+  if(b[2]-b[0]<1||b[3]-b[1]<1)return null;
+  const corners=new Set();
+  for(let i=0;i<8;i+=2){
+    const x=near(p[i],b[0])?0:near(p[i],b[2])?1:-1;
+    const y=near(p[i+1],b[1])?0:near(p[i+1],b[3])?1:-1;
+    if(x<0||y<0||(!near(p[i],p[i+2])&&!near(p[i+1],p[i+3])))return null;
+    corners.add(x+','+y);
+  }
+  return corners.size===4?b:null;
+}
+function resizeRectanglePosition(annotation,dir,dx,dy) {
+  const b=rectangleBounds(annotation);
+  if(!b||!['tl','tr','bl','br','l','r','t','b'].includes(dir)||!Number.isFinite(dx)||!Number.isFinite(dy))return null;
+  const r=b.slice();
+  if(dir.includes('l'))r[0]=Math.min(b[2]-1,b[0]+dx);
+  if(dir.includes('r'))r[2]=Math.max(b[0]+1,b[2]+dx);
+  if(dir.includes('b'))r[1]=Math.min(b[3]-1,b[1]+dy);
+  if(dir.includes('t'))r[3]=Math.max(b[1]+1,b[3]+dy);
+  const sx=(r[2]-r[0])/(b[2]-b[0]),sy=(r[3]-r[1])/(b[3]-b[1]);
+  return {...annotation.position,paths:[annotation.position.paths[0].map((v,i)=>i%2?r[1]+(v-b[1])*sy:r[0]+(v-b[0])*sx)]};
+}
 function attachRectangleView(win,view,internal,owner) {
   const doc=win.document, viewport=doc.getElementById('viewerContainer');
   const clone=value=>Components.utils.cloneInto(value,owner.reader._iframeWindow);
@@ -30,6 +61,17 @@ function attachRectangleView(win,view,internal,owner) {
   const editable=t=>t?.closest?.('input,textarea,button,select,a,[contenteditable="true"],.popup');
   const reserved=e=>e.ctrlKey||e.altKey||e.metaKey||pdfGestureBindings.get(win)?.shortcutState().space;
   let drag=null;
+  const resize=e=>{
+    const action=view.action,start=view.pointerDownPosition;
+    if(drag||owner.active||internal._state.readOnly||action?.annotation?.readOnly||action?.type!=='resize'||!start||!rectangleBounds(action.annotation))return false;
+    const point=view.pointerEventToAltPosition(e,start.pageIndex)?.rects?.[0],origin=start.rects[0];
+    if(!point)return false;
+    const position=resizeRectanglePosition(action.annotation,action.dir,point[0]-origin[0],point[1]-origin[1]);
+    if(!position)return false;
+    action.position=clone(position);action.triggered=true;
+    view._onSetAnnotationPopup?.();view._onSetSelectionPopup?.();view._render?.();
+    return true;
+  };
   const cancel=()=>{if(drag){drag.preview.remove();drag=null;view._clearPointerAction?.();}};
   const down=e=>{
     if (!owner.active || internal._state.readOnly || e.button!==0 || reserved(e) || editable(e.target)) return;
@@ -54,6 +96,9 @@ function attachRectangleView(win,view,internal,owner) {
     move(e);
   };
   const move=e=>{
+    // Capture before native ink's proportional resize. Keep the native action
+    // so pointerup still commits through Zotero's normal undo/save machinery.
+    if(resize(e)){consume(e);return;}
     if(!drag || (e.pointerId!==undefined&&e.pointerId!==drag.pointerID))return;
     consume(e);
     const rect=drag.page.div.getBoundingClientRect();
@@ -65,6 +110,7 @@ function attachRectangleView(win,view,internal,owner) {
     drag.end=drag.page.viewport.convertToPdfPoint(x,y);
   };
   const up=e=>{
+    if(!drag&&view.action?.type==='resize'&&view.action.triggered){resize(e);return;}
     if(!drag || e.button!==0 || (e.pointerId!==undefined&&e.pointerId!==drag.pointerID))return;
     move(e);
     const data=drag;

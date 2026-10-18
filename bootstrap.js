@@ -112,7 +112,7 @@ async function startup({ id, rootURI } = {}) {
   if (previous && previous !== runtimeHandle) {
     try { previous.dispose(); } catch(error) { report(error); }
   }
-  runtimeHandle = {version:'0.11.0',dispose:shutdown};
+  runtimeHandle = {version:'0.11.1',dispose:shutdown};
   Zotero.__chatgptReaderRuntime = runtimeHandle;
   // This local build has no update server. Keep automatic update checks disabled.
   if (id) {
