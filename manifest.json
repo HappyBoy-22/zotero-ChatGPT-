@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "ChatGPT 论文助手",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Zotero 阅读侧栏接入 ChatGPT 官网，支持论文独立对话、自动分析和 PDF 批注快捷键，无需 API Key。",
   "applications": {
     "zotero": {

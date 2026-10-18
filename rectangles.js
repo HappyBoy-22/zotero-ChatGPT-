@@ -30,14 +30,16 @@ function attachRectangleView(win,view,internal,owner) {
   const editable=t=>t?.closest?.('input,textarea,button,select,a,[contenteditable="true"],.popup');
   const reserved=e=>e.ctrlKey||e.altKey||e.metaKey||pdfGestureBindings.get(win)?.shortcutState().space;
   let drag=null;
-  const cancel=()=>{drag?.preview.remove();drag=null;};
+  const cancel=()=>{if(drag){drag.preview.remove();drag=null;view._clearPointerAction?.();}};
   const down=e=>{
     if (!owner.active || internal._state.readOnly || e.button!==0 || reserved(e) || editable(e.target)) return;
     const pageDiv=e.target.closest?.('.page');
     const pages=win.PDFViewerApplication?.pdfViewer?._pages || [];
     const pageIndex=pages.findIndex(p=>p.div===pageDiv);
     if(pageIndex<0)return;
-    consume(e);cancel();
+    // Zotero's capture listener ran before ours and may already have started
+    // a native ink action. Consuming pointerup alone leaves that action alive.
+    consume(e);cancel();view._clearPointerAction?.();win.focus();
     const page=pages[pageIndex], rect=pageDiv.getBoundingClientRect();
     const preview=owner.shape==='arrow'?doc.createElementNS('http://www.w3.org/2000/svg','svg'):doc.createElement('div');
     preview.style.cssText='position:absolute;pointer-events:none;z-index:1000;box-sizing:border-box;';
@@ -75,7 +77,9 @@ function attachRectangleView(win,view,internal,owner) {
     }
   };
   const mouse=e=>{
-    if(owner.active && !reserved(e) && e.button===0 && viewport.contains(e.target) && !editable(e.target))consume(e);
+    if(owner.active && !reserved(e) && e.button===0 && viewport.contains(e.target) && !editable(e.target)){
+      consume(e);view._clearPointerAction?.();
+    }
   };
   const key=e=>{if(e.key==='Escape'&&owner.active){consume(e);cancel();owner.deactivate();}};
   const blur=e=>{if(e.type==='pointercancel'||e.target===win||e.target===doc)cancel();};
@@ -91,7 +95,7 @@ function refreshRectangleTools() {
   const live=new Set();
   for(const reader of Zotero.Reader._readers||[]) {
     const internal=reader._internalReader, doc=reader._iframeWindow?.document;
-    if(!internal||!doc)continue;
+    if(!internal?._state?.tool||!doc)continue;
     live.add(reader);
     let owner=rectangleReaders.get(reader);
     if(owner&&owner.document!==doc){owner.cleanup();rectangleReaders.delete(reader);owner=null;}
@@ -116,18 +120,21 @@ function refreshRectangleTools() {
       const rect=doc.createElementNS('http://www.w3.org/2000/svg','rect');
       for(const[k,v]of Object.entries({x:3,y:4,width:14,height:12,rx:0.5,fill:'none',stroke:'currentColor','stroke-width':1.5}))rect.setAttribute(k,String(v));
       svg.append(rect);b.append(svg);
-      b.addEventListener('click',e=>{e.preventDefault();if(internal._state.readOnly)return;for(const c of owner.views.values())c.cancel();if(owner.active&&owner.shape==='rectangle')owner.deactivate();else{internal.setTool(Components.utils.cloneInto(annotationToolDefaults('ink'),reader._iframeWindow));owner.shape='rectangle';owner.active=true;}sync();});
+      b.addEventListener('click',e=>{e.preventDefault();if(internal._state.readOnly)return;for(const c of owner.views.values())c.cancel();if(owner.active&&owner.shape==='rectangle')owner.deactivate();else{internal.setTool(Components.utils.cloneInto(annotationToolDefaults('ink'),reader._iframeWindow));owner.shape='rectangle';owner.active=true;}sync();internal._primaryView?._iframeWindow?.focus();});
       ink.after(b);owner.button=b;
     }
     if(!owner.arrow?.isConnected) {
       const b=doc.createElement('button');b.type='button';b.className='toolbar-button chatgpt-reader-arrow';b.title='箭头：从起点拖向终点；Esc 退出';b.setAttribute('aria-label','绘制箭头');b.setAttribute('aria-pressed','false');
       const svg=doc.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 20 20');svg.setAttribute('width','20');svg.setAttribute('height','20');svg.setAttribute('aria-hidden','true');
       const path=doc.createElementNS('http://www.w3.org/2000/svg','path');for(const[k,v]of Object.entries({d:'M 3 16 L 16 3 M 7 3 L 16 3 L 16 12',fill:'none',stroke:'currentColor','stroke-width':'1.5'}))path.setAttribute(k,v);svg.append(path);b.append(svg);
-      b.addEventListener('click',e=>{e.preventDefault();if(internal._state.readOnly)return;for(const c of owner.views.values())c.cancel();if(owner.active&&owner.shape==='arrow')owner.deactivate();else{internal.setTool(Components.utils.cloneInto(annotationToolDefaults('ink'),reader._iframeWindow));owner.shape='arrow';owner.active=true;}sync();});
+      b.addEventListener('click',e=>{e.preventDefault();if(internal._state.readOnly)return;for(const c of owner.views.values())c.cancel();if(owner.active&&owner.shape==='arrow')owner.deactivate();else{internal.setTool(Components.utils.cloneInto(annotationToolDefaults('ink'),reader._iframeWindow));owner.shape='arrow';owner.active=true;}sync();internal._primaryView?._iframeWindow?.focus();});
       owner.button.after(b);owner.arrow=b;
     }
     function sync(){
-      if(internal._state.tool.type!=='ink'||internal._state.readOnly){owner.active=false;for(const c of owner.views.values())c.cancel();}
+      const temporary=[...owner.views.keys()].some(win=>{
+        const s=pdfGestureBindings.get(win)?.shortcutState();return s&&(s.space||s.textChord||s.stroke||s.textEditing);
+      });
+      if((internal._state.tool.type!=='ink'&&!temporary)||internal._state.readOnly){owner.active=false;for(const c of owner.views.values())c.cancel();}
       owner.button.classList.toggle('active',owner.active&&owner.shape==='rectangle');owner.button.setAttribute('aria-pressed',String(owner.active&&owner.shape==='rectangle'));owner.button.disabled=!!internal._state.readOnly;
       if(owner.arrow){owner.arrow.classList.toggle('active',owner.active&&owner.shape==='arrow');owner.arrow.setAttribute('aria-pressed',String(owner.active&&owner.shape==='arrow'));owner.arrow.disabled=!!internal._state.readOnly;}
       if(owner.active)ink.classList.remove('active');

@@ -140,6 +140,8 @@ function attachPDFGestures(win,internal = null,view = null) {
     if (space || (textChord && event.ctrlKey)) return;
     if (event.button !== 0 || !event.ctrlKey || event.altKey || event.metaKey || !inPage(event)) return;
     consume(event);
+    // The reader's earlier capture listener can have started native drawing.
+    view?._clearPointerAction?.();
     previousCursor = viewport.style.cursor;
     drag = {x:event.clientX,y:event.clientY,left:viewport.scrollLeft,top:viewport.scrollTop};
     viewport.style.cursor = 'grabbing';
@@ -186,11 +188,10 @@ function attachPDFGestures(win,internal = null,view = null) {
     for (const [type,handler] of registrations) win.removeEventListener(type,handler,true);
   };
   cleanup.document = doc;
-  cleanup.shortcutState = () => ({space,textChord,stroke,eraseRight});
+  cleanup.shortcutState = () => ({space,textChord,stroke,eraseRight,textEditing});
   return cleanup;
 }
 function refreshPDFGestures() {
-  if(typeof refreshRectangleTools==='function')refreshRectangleTools();
   const live = new Set();
   for (const reader of Zotero.Reader._readers || []) {
     const internal = reader._internalReader;
@@ -208,6 +209,10 @@ function refreshPDFGestures() {
   }
   for (const [win,cleanup] of pdfGestureBindings) {
     if (!live.has(win)) { cleanup(); pdfGestureBindings.delete(win); }
+  }
+  // Optional shape toolbar failures must never prevent keyboard listeners.
+  if(typeof refreshRectangleTools==='function'){
+    try { refreshRectangleTools(); } catch(error) { report(error); }
   }
 }
 function startPDFGestures() {

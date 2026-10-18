@@ -5,7 +5,7 @@
 
 # Keep a single reviewed release package in source control.
 /dist/*
-!/dist/chatgpt-reader-0.10.0.xpi
+!/dist/chatgpt-reader-0.10.1.xpi
 !/dist/SHA256SUMS
 
 node_modules/
