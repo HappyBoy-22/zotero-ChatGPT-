@@ -216,6 +216,9 @@ function refreshPDFGestures() {
   if(typeof refreshRectangleTools==='function'){
     try { refreshRectangleTools(); } catch(error) { report(error); }
   }
+  if(typeof refreshPictureTools==='function'){
+    try { refreshPictureTools(); } catch(error) { report(error); }
+  }
 }
 function startPDFGestures() {
   Zotero.ChatGPTReader.gestureStatus = target => ({count:pdfGestureBindings.size,matching:pdfGestureBindings.has(target),shortcuts:pdfGestureBindings.get(target)?.shortcutState()});
@@ -227,5 +230,6 @@ function stopPDFGestures() {
   const cleanups = [...pdfGestureBindings.values()];
   pdfGestureBindings.clear();
   if(typeof stopRectangleTools==='function') { try { stopRectangleTools(); } catch(error) { report(error); } }
+  if(typeof stopPictureTools==='function') { try { stopPictureTools(); } catch(error) { report(error); } }
   for (const cleanup of cleanups) { try { cleanup(); } catch(error) { report(error); } }
 }

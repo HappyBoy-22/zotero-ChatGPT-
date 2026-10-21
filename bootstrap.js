@@ -83,6 +83,7 @@ function onMainWindowLoad({ window: win }) {
   const popup = doc.createXULElement('menupopup');
   popup.append(
     button(doc, '打开 / 创建两侧留白笔记副本', () => openMarginCopy(win), 'menuitem'),
+    button(doc, '导出含图片的 PDF', () => openPictureExport(win), 'menuitem'),
     button(doc, '显示 / 收起 ChatGPT 侧边栏', () => toggleSidebar(win), 'menuitem'),
     button(doc, '复制论文信息到侧边栏', () => copyContext(false, win), 'menuitem'),
     button(doc, '复制信息与批注到侧边栏', () => copyContext(true, win), 'menuitem')
@@ -104,7 +105,7 @@ async function startup({ id, rootURI } = {}) {
   generation++;
   const startedGeneration = generation;
   if (!extensionModulesLoaded) {
-    for (const file of ['sidebar.js','bindings.js','analysis.js','autochat.js','gestures.js','margins.js','rectangles.js']) Services.scriptloader.loadSubScriptWithOptions(rootURI + file, { target:this, ignoreCache:true });
+    for (const file of ['sidebar.js','bindings.js','analysis.js','autochat.js','gestures.js','margins.js','rectangles.js','images.js']) Services.scriptloader.loadSubScriptWithOptions(rootURI + file, { target:this, ignoreCache:true });
     extensionModulesLoaded = true;
   }
   marginRootURI = rootURI;
@@ -112,7 +113,7 @@ async function startup({ id, rootURI } = {}) {
   if (previous && previous !== runtimeHandle) {
     try { previous.dispose(); } catch(error) { report(error); }
   }
-  runtimeHandle = {version:'0.11.1',dispose:shutdown};
+  runtimeHandle = {version:'0.12.0',dispose:shutdown};
   Zotero.__chatgptReaderRuntime = runtimeHandle;
   // This local build has no update server. Keep automatic update checks disabled.
   if (id) {

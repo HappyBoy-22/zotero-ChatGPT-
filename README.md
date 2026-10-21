@@ -2,11 +2,11 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Zotero 10](https://img.shields.io/badge/Zotero-10.0.x-CC2936.svg)](manifest.json)
-[![Version](https://img.shields.io/badge/version-0.11.1-20856B.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.12.0-20856B.svg)](CHANGELOG.md)
 
 在 Zotero 侧边栏使用 ChatGPT 官网，一边读论文，一边继续这篇论文的对话。使用网页登录，无需 API Key；同时提供 PDF 拖动、缩放和临时批注快捷键。
 
-**[下载插件 v0.11.1](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.11.1.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
+**[下载插件 v0.12.0](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.12.0.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
 
 ## 功能
 
@@ -18,6 +18,7 @@
 | 保持阅读状态 | 侧栏初次默认关闭；展开后切换论文保持展开，并切换到对应对话 |
 | 两侧留白笔记 | 一键创建加宽 PDF 副本，保留原文件，在空白区使用原生文字和画笔批注 |
 | 方框与箭头批注 | 画笔旁新增方框和箭头按钮，拖动绘制，按原生笔迹保存 |
+| 插入图片 | 选择 PNG / JPG / WebP 后点击页面放置，拖动移动和缩放，可导出到 PDF |
 | PDF 操作快捷键 | Ctrl + 滚轮缩放、Ctrl + 左键拖动、临时文本 / 画笔 / 橡皮擦 |
 | 批注默认样式 | 设置文字字号和颜色、画笔粗细和颜色、橡皮擦直径 |
 
@@ -25,7 +26,7 @@
 
 目前面向 **Zotero 10.0.x**，在 **Windows / Zotero 10.0.6** 环境验证。安装清单不支持 Zotero 6、7、8；其他系统尚未验证。
 
-1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.11.1.xpi)，保留 `.xpi` 后缀，无需解压。
+1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.12.0.xpi)，保留 `.xpi` 后缀，无需解压。
 2. 打开 Zotero，进入 **工具 → 插件 → 齿轮 → 从文件安装插件**，选择下载的文件。
 3. 重启 Zotero，打开一篇 PDF，点击右上角 **ChatGPT** 展开侧栏。
 4. 在侧栏内登录自己的 ChatGPT 账号。登录状态与系统浏览器独立。
@@ -59,6 +60,14 @@
 **调整方框大小**：选中方框后拖动蓝色角点，宽、高可以独立变化，不锁定比例；沿水平方向拖动只改宽度，沿竖直方向拖动只改高度。旧版本创建的方框也适用。
 
 颜色使用工具栏的颜色选项，初始线宽使用插件设置中的画笔粗细。方框和箭头均保存为原生笔迹，支持 Zotero 撤销 / 重做、移动、删除、橡皮擦与 PDF 导出；普通页面和两侧留白区域都可绘制。按住 Ctrl 仍可拖动页面，按住空格仍可使用临时画笔。
+
+## 插入图片
+
+点击 PDF 顶部工具栏中箭头右侧的 **插入图片** 按钮，选择 PNG、JPG 或 WebP，再点击论文页面或两侧留白区域放置。选中图片后拖动图片移动，拖动八个蓝色控制点调整大小；宽、高可独立改变。按 **Delete** 或点击 **删除图片** 移除，按 **Esc** 取消放置或选中。
+
+图片内容和位置保存在本机 Zotero 数据目录的 `chatgpt-reader/images/` 下，按 PDF 附件分别保存。切换论文、重新打开和重启后恢复；图片不会自动加入 Zotero 原生批注同步。请随 Zotero 数据目录一起备份。
+
+需要分享或打印时，使用 **工具 → ChatGPT 论文助手 → 导出含图片的 PDF**。该入口会将图片与原生批注写入独立 PDF；Zotero 普通导出入口不包含插件图片层。原 PDF 保留。单张图片最大 20 MB，导入后最长边超过 4096 像素时会缩小。
 
 ## PDF 快捷键
 
