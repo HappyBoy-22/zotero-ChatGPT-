@@ -2,16 +2,17 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Zotero 10](https://img.shields.io/badge/Zotero-10.0.x-CC2936.svg)](manifest.json)
-[![Version](https://img.shields.io/badge/version-0.12.0-20856B.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.13.1-20856B.svg)](CHANGELOG.md)
 
 在 Zotero 侧边栏使用 ChatGPT 官网，一边读论文，一边继续这篇论文的对话。使用网页登录，无需 API Key；同时提供 PDF 拖动、缩放和临时批注快捷键。
 
-**[下载插件 v0.12.0](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.12.0.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
+**[下载插件 v0.13.1](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.13.1.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
 
 ## 功能
 
 | 功能 | 使用方式 |
 | --- | --- |
+| 论文阅读清单 | 顶部打开独立清单，逐篇勾选已读，支持搜索和筛选 |
 | ChatGPT 阅读侧栏 | 在 PDF 旁展开聊天，可拖动调整宽度 |
 | 一篇论文一个对话 | 首次发送后自动保存对话链接，返回论文时恢复原对话 |
 | 自定义分析 prompt | 首次展开时自动发送 prompt、标题、作者、年份、期刊 / 会议、DOI 和链接 |
@@ -26,7 +27,7 @@
 
 目前面向 **Zotero 10.0.x**，在 **Windows / Zotero 10.0.6** 环境验证。安装清单不支持 Zotero 6、7、8；其他系统尚未验证。
 
-1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.12.0.xpi)，保留 `.xpi` 后缀，无需解压。
+1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.13.1.xpi)，保留 `.xpi` 后缀，无需解压。
 2. 打开 Zotero，进入 **工具 → 插件 → 齿轮 → 从文件安装插件**，选择下载的文件。
 3. 重启 Zotero，打开一篇 PDF，点击右上角 **ChatGPT** 展开侧栏。
 4. 在侧栏内登录自己的 ChatGPT 账号。登录状态与系统浏览器独立。
@@ -46,6 +47,14 @@
 自动初始化**不上传 PDF，也不提取正文、摘要、笔记或批注**。ChatGPT 能否找到原文、进行联网搜索以及完成分析，取决于当前账号、模型、网站能力和可访问的来源。
 
 已有对话可在 **对话管理** 中恢复，请使用自己的 `https://chatgpt.com/c/…` 对话链接，分享链接 `/share/…` 不适用。绑定保存在本机，不随 Zotero 同步到其他设备。更多操作见[使用指南](docs/usage.md)。
+
+## 论文阅读清单
+
+点击 Zotero 顶部 **阅读清单**（也可从 **工具 → ChatGPT 论文助手 → 打开阅读清单** 进入），在独立标签页查看全部文库的论文。每行显示论文名，右侧 **已读** 复选框由你手动勾选或取消；打开 PDF、阅读时长和 ChatGPT 分析不会自动改变状态。
+
+支持按论文名搜索、按文库或全部 / 未读 / 已读筛选，并显示完成数量。点击论文名可在文库定位条目。每页显示 100 篇，可以翻页查看全部论文；新增、改名和删除条目后清单自动刷新。
+
+同一父论文下的原文、翻译版和留白 PDF 只显示一行；独立 PDF 也会列出。笔记、子附件、回收站和订阅条目不在清单中。已读状态按文库与条目保存在本机 Zotero 配置中，关闭清单或重启后保留；不自动同步到其他设备。
 
 ## 论文两侧留白
 
