@@ -26,7 +26,8 @@ python build.py
 | `autochat.js` | 自动初始化、防重复和对话链接捕获 |
 | `analysis.js` | 基本信息生成、设置注册与密码管理器 |
 | `ReaderChild.sys.mjs` | 官网输入框、发送及登录表单的内容进程操作 |
-| `reading-list.js` | 手动已读状态、论文清单标签页、搜索筛选与生命周期清理 |
+| `reading-list.js` | 手动已读状态、原生条目表的已读复选框列与旧清单兼容处理 |
+| `file-import.js` / `file-import.xhtml` / `file-import-window.js` | 主界面拖放与进度、本地递归导入、可选选择窗口、内容去重及父论文分类关联 |
 | `images.js` | 本机图片层、移动缩放、逐附件存储与 PDF 图片导出 |
 | `rectangles.js` | 原生工具栏方框 / 箭头按钮、拖动预览及原生笔迹保存 |
 | `margins.js` | 生成保留原文件与嵌入批注的左右留白 PDF 副本 |
@@ -40,11 +41,12 @@ python build.py
 
 ## 测试范围
 
-运行 `node scripts/test.cjs` 会执行全部十三个测试文件：
+运行 `node scripts/test.cjs` 会执行全部十四个测试文件：
 
 | 测试 | 主要覆盖 |
 | --- | --- |
-| `reading-list.cjs` | 论文去重、文库隔离、手动标记与持久化回滚、筛选和标签页会话保护 |
+| `file-import.cjs` | 递归 / 重叠目录、符号链接、SHA-256、父条目复用、重复导入、目标权限、停止与单文件错误 |
+| `reading-list.cjs` | 论文去重、文库隔离、手动标记与持久化回滚、原生复选框与事件隔离、旧清单会话保护 |
 | `images.cjs` | 图片记录校验、独立缩放、页面裁切、旋转、本机持久化与 PDF 图片嵌入 |
 | `rectangles.cjs` | 方框闭合路径、旧方框识别、独立宽高缩放、箭头方向与箭头头部、反向拖动、页边裁切、样式与点击不创建 |
 | `lifecycle.cjs` | 已关闭窗口清理失败隔离、定时器回收、设置独立注册与旧实例所有权保护 |
@@ -73,7 +75,7 @@ GitHub Actions 在 Windows 和 Linux 执行单元测试、构建，并上传 XPI
 3. 运行测试和构建，并完成真实 Zotero 的交互回归。
 4. 提交新版 XPI 与校验值。旧包保留于 Git 历史；工作目录中的其他历史包不会被自动上传。
 
-校验文件可用 PowerShell 的 `Get-FileHash .\dist\chatgpt-reader-0.13.1.xpi -Algorithm SHA256` 或 Linux 的 `sha256sum -c SHA256SUMS`（在 `dist/` 内运行）核对。
+校验文件可用 PowerShell 的 `Get-FileHash .\dist\chatgpt-reader-0.14.0.xpi -Algorithm SHA256` 或 Linux 的 `sha256sum -c SHA256SUMS`（在 `dist/` 内运行）核对。
 
 ## 贡献
 

@@ -18,7 +18,8 @@ output.parent.mkdir(exist_ok=True)
 files = (
     'manifest.json', 'bootstrap.js', 'sidebar.js', 'bindings.js',
     'analysis.js', 'autochat.js', 'gestures.js', 'ReaderChild.sys.mjs',
-    'preferences.xhtml', 'preferences.js', 'margins.js', 'rectangles.js', 'images.js', 'reading-list.js', 'LICENSE',
+    'preferences.xhtml', 'preferences.js', 'margins.js', 'rectangles.js', 'images.js', 'reading-list.js',
+    'file-import.js', 'file-import.xhtml', 'file-import-window.js', 'LICENSE',
     'vendor/pdf-lib.min.js', 'vendor/pdf-lib.LICENSE.md',
 )
 with ZipFile(output, 'w', ZIP_DEFLATED) as archive:

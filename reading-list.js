@@ -1,5 +1,47 @@
 /* Manual reading status, one flag per bibliographic item (or standalone PDF). */
 var readingLists = new Map(), readingTabHooks = new Map();
+var readingColumnKey = null;
+function startReadingColumn(pluginID) {
+  if (readingColumnKey) return;
+  readingColumnKey = Zotero.ItemTreeManager.registerColumn({
+    dataKey:'paperRead',label:'已读',pluginID,enabledTreeIDs:['main'],defaultIn:['*'],
+    width:'54',flex:0,fixedWidth:true,staticWidth:true,minWidth:48,
+    zoteroPersist:['width','hidden','sortDirection'],
+    dataProvider:item=>readingPaper(item)?`${isPaperRead(item)?1:0}:${item.id}`:'',
+    renderCell(index,data,column,isFirstColumn,doc) {
+      const cell = doc.createElementNS('http://www.w3.org/1999/xhtml','span');
+      cell.className = 'cell '+column.className;cell.style.cssText = 'display:flex;align-items:center;justify-content:center;';
+      if (!data) return cell;
+      const item = Zotero.Items.get(Number(data.split(':')[1]));if (!item || !readingPaper(item)) return cell;
+      const checkbox = doc.createElementNS('http://www.w3.org/1999/xhtml','input');
+      checkbox.type = 'checkbox';checkbox.checked = isPaperRead(item);checkbox.dataset.paperRead = String(item.id);
+      checkbox.style.cssText = 'width:17px;height:17px;accent-color:#3478f6;cursor:pointer;margin:0;';
+      checkbox.setAttribute('aria-label','已读：'+(item.getField('title')||'未命名论文'));
+      checkbox.title = '手动标记已读 / 未读';
+      for (const type of ['pointerdown','mousedown','mouseup','click','dblclick']) checkbox.addEventListener(type,event=>event.stopPropagation());
+      checkbox.addEventListener('keydown',event=>{if (event.code==='Space'||event.key==='Enter') event.stopPropagation();});
+      checkbox.addEventListener('change',()=>{
+        try {setPaperRead(item,checkbox.checked);}
+        catch (error) {checkbox.checked = isPaperRead(item);report(error);doc.defaultView.alert('保存已读状态失败：'+error.message);}
+      });
+      const content=doc.createElementNS('http://www.w3.org/1999/xhtml','span');content.className='cell-text';content.append(checkbox);cell.append(content);return cell;
+    }
+  });
+  if (!readingColumnKey) throw Error('无法注册已读复选框列。');
+}
+function stopReadingColumn() {
+  if (readingColumnKey) Zotero.ItemTreeManager.unregisterColumn(readingColumnKey);readingColumnKey = null;
+}
+function refreshReadingColumn(item) {
+  for (const win of Zotero.getMainWindows?.() || []) {
+    try {
+      const view = win.ZoteroPane?.itemsView;if (!view) continue;
+      view.invalidateRowCache([item.id]);
+      const index = view.getRowIndexByID(item.id);
+      if (index !== false && index !== undefined) view.tree?.invalidateRow(index);
+    } catch (error) {report(error);}
+  }
+}
 function installReadingTabHooks(win) {
   if(readingTabHooks.has(win))return;
   const tabs=win.Zotero_Tabs,type='chatgptReadingList',original=tabs.getState;
@@ -23,10 +65,12 @@ function setPaperRead(item,value) {
   const key=readingStatusKey(item),previous=Zotero.Prefs.get(key);
   try{Zotero.Prefs.set(key,value);Services.prefs.savePrefFile(null);}
   catch(error){if(previous===undefined)Zotero.Prefs.clear(key);else Zotero.Prefs.set(key,previous);throw error;}
+  refreshReadingColumn(item);
   for(const state of readingLists.values())if(!state.disposed){try{state.render();}catch(error){report(error);}}
 }
 function readingPaper(item) {
-  return !item.deleted&&!item.parentItemID&&(item.isRegularItem()||item.isPDFAttachment());
+  return !!item&&!item.deleted&&!item.parentItemID&&(item.isRegularItem?.()||item.isPDFAttachment?.())
+    && Zotero.Libraries?.get?.(item.libraryID)?.libraryType !== 'feed';
 }
 function readingListRows(items,libraryNames) {
   return items.filter(readingPaper).map(item=>({item,title:item.getField('title')||'未命名论文',library:libraryNames.get(item.libraryID)||'文库'}))

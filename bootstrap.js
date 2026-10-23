@@ -82,7 +82,7 @@ function onMainWindowLoad({ window: win }) {
   menu.setAttribute('label', 'ChatGPT 论文助手');
   const popup = doc.createXULElement('menupopup');
   popup.append(
-    button(doc, '打开阅读清单', () => openReadingList(win), 'menuitem'),
+    button(doc, '导入文件 / 文件夹', () => openFileImport(win), 'menuitem'),
     button(doc, '打开 / 创建两侧留白笔记副本', () => openMarginCopy(win), 'menuitem'),
     button(doc, '导出含图片的 PDF', () => openPictureExport(win), 'menuitem'),
     button(doc, '显示 / 收起 ChatGPT 侧边栏', () => toggleSidebar(win), 'menuitem'),
@@ -93,9 +93,11 @@ function onMainWindowLoad({ window: win }) {
   target.append(menu);
   mainWindows.add(win);
   addSidebarToggle(win);
+  if (typeof installFileImportDrop === 'function') installFileImportDrop(win);
 }
 
 function onMainWindowUnload({ window: win }) {
+  if (typeof stopFileImportWindow === 'function') stopFileImportWindow(win);
   win.document.getElementById(PREFIX + 'menu')?.remove();
   cleanupSidebar(win);
   mainWindows.delete(win);
@@ -106,15 +108,16 @@ async function startup({ id, rootURI } = {}) {
   generation++;
   const startedGeneration = generation;
   if (!extensionModulesLoaded) {
-    for (const file of ['sidebar.js','bindings.js','analysis.js','autochat.js','gestures.js','margins.js','rectangles.js','images.js','reading-list.js']) Services.scriptloader.loadSubScriptWithOptions(rootURI + file, { target:this, ignoreCache:true });
+    for (const file of ['sidebar.js','bindings.js','analysis.js','autochat.js','gestures.js','margins.js','rectangles.js','images.js','reading-list.js','file-import.js']) Services.scriptloader.loadSubScriptWithOptions(rootURI + file, { target:this, ignoreCache:true });
     extensionModulesLoaded = true;
   }
   marginRootURI = rootURI;
+  fileImportRootURI = rootURI;
   const previous = Zotero.__chatgptReaderRuntime;
   if (previous && previous !== runtimeHandle) {
     try { previous.dispose(); } catch(error) { report(error); }
   }
-  runtimeHandle = {version:'0.13.1',dispose:shutdown};
+  runtimeHandle = {version:'0.14.0',dispose:shutdown};
   Zotero.__chatgptReaderRuntime = runtimeHandle;
   // This local build has no update server. Keep automatic update checks disabled.
   if (id) {
@@ -126,6 +129,7 @@ async function startup({ id, rootURI } = {}) {
   if (stopped || generation !== startedGeneration) return;
   try { await registerAssistant(id,rootURI); }
   catch (error) { report(error); }
+  try { startReadingColumn(id); } catch (error) { report(error); }
   if (stopped || generation !== startedGeneration || Zotero.__chatgptReaderRuntime !== runtimeHandle) return;
   for (const win of Zotero.getMainWindows()) { try { onMainWindowLoad({ window: win }); } catch(error) { report(error); } }
   try { watchReaderWindows(); } catch(error) { report(error); }
@@ -136,6 +140,8 @@ function shutdown() {
   stopped = true;
   generation++;
   const cleanup = action=>{try {action();}catch(error){report(error);}};
+  if (typeof stopFileImports === 'function') cleanup(stopFileImports);
+  if (typeof stopReadingColumn === 'function') cleanup(stopReadingColumn);
   if (typeof stopReadingLists === 'function') cleanup(stopReadingLists);
   if (typeof stopPDFGestures === 'function') cleanup(stopPDFGestures);
   if (typeof stopReaderWindows === 'function') cleanup(stopReaderWindows);

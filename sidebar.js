@@ -216,7 +216,7 @@ function addSidebarToggle(win) {
   margins.id = PREFIX+'margins';
   margins.setAttribute('tooltiptext','打开 / 创建可批注的左右留白 PDF 副本');
   target?.prepend(margins);
-  if(typeof addReadingListButton==='function')addReadingListButton(win,target);
+  if(typeof addFileImportButton==='function')addFileImportButton(win,target);
 }
 
 function cleanupSidebar(win) {
@@ -237,6 +237,7 @@ function cleanupSidebar(win) {
   win.document.getElementById(PREFIX + 'toggle')?.remove();
   win.document.getElementById(PREFIX + 'margins')?.remove();
   win.document.getElementById(PREFIX + 'reading-list')?.remove();
+  win.document.getElementById(PREFIX + 'file-import')?.remove();
 }
 
 function watchReaderWindows() {

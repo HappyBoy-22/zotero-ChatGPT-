@@ -23,4 +23,19 @@ const win={addEventListener(){},removeEventListener(){},Zotero_Tabs:{getState:or
 env.installReadingTabHooks(win);assert.deepEqual(win.Zotero_Tabs.getState().map(t=>t.type),['library','reader'],'custom page cannot corrupt native session restoration');
 env.stopReadingListWindow(win);assert.equal(win.Zotero_Tabs.getState,original);assert.deepEqual(win.Zotero_Tabs._history,[[{type:'reader'}]]);assert.equal(win.Zotero_Tabs.tabHooks.undoClose.chatgptReadingList,undefined);
 assert.equal(errors.length,0);
+let column,unregistered;const invalidated=[];
+env.Zotero.ItemTreeManager={registerColumn:options=>(column=options,'test-paperRead'),unregisterColumn:key=>unregistered=key};
+env.Zotero.Items={get:id=>id===a.id?a:null};
+env.Zotero.getMainWindows=()=>[{ZoteroPane:{itemsView:{invalidateRowCache:ids=>invalidated.push(...ids),getRowIndexByID:()=>0,tree:{invalidateRow:index=>assert.equal(index,0)}}}}];
+env.startReadingColumn('test@local');assert.equal(column.label,'已读');assert.equal(column.defaultIn[0],'*');
+assert.equal(column.dataProvider(a),'0:1');assert.equal(column.dataProvider({...a,parentItemID:7}),'');assert.equal(column.dataProvider({}),'');
+class Element{constructor(tag){this.tag=tag;this.children=[];this.handlers={};this.dataset={};this.style={};}append(node){this.children.push(node);}setAttribute(key,value){this[key]=value;}addEventListener(type,handler){this.handlers[type]=handler;}}
+const doc={createElementNS:(_,tag)=>new Element(tag),defaultView:{alert:message=>{throw Error(message);}}};
+const cell=column.renderCell(0,column.dataProvider(a),{className:'read'},false,doc),checkbox=cell.children[0].children[0];
+assert.equal(checkbox.type,'checkbox');assert.equal(checkbox.checked,false);assert.match(checkbox['aria-label'],/Alpha/);
+let stoppedClick=false;checkbox.handlers.click({stopPropagation:()=>stoppedClick=true});assert.equal(stoppedClick,true,'checkbox does not select or open the row');
+checkbox.checked=true;checkbox.handlers.change();assert.equal(env.isPaperRead(a),true);assert.deepEqual(invalidated,[1]);
+checkbox.checked=false;checkbox.handlers.change();assert.equal(env.isPaperRead(a),false);
+assert.equal(column.renderCell(0,'',{className:'read'},false,doc).children.length,0,'notes and children have no checkbox');
+env.stopReadingColumn();assert.equal(unregistered,'test-paperRead');assert.equal(env.readingColumnKey,null);
 console.log('PASS: paper deduplication, library isolation, explicit check/uncheck, durable preference flush/rollback, filters, stale windows and native tab session/undo cleanup');
