@@ -23,11 +23,12 @@ const win={addEventListener(){},removeEventListener(){},Zotero_Tabs:{getState:or
 env.installReadingTabHooks(win);assert.deepEqual(win.Zotero_Tabs.getState().map(t=>t.type),['library','reader'],'custom page cannot corrupt native session restoration');
 env.stopReadingListWindow(win);assert.equal(win.Zotero_Tabs.getState,original);assert.deepEqual(win.Zotero_Tabs._history,[[{type:'reader'}]]);assert.equal(win.Zotero_Tabs.tabHooks.undoClose.chatgptReadingList,undefined);
 assert.equal(errors.length,0);
-let column,unregistered;const invalidated=[];
-env.Zotero.ItemTreeManager={registerColumn:options=>(column=options,'test-paperRead'),unregisterColumn:key=>unregistered=key};
+let unregistered=[];const invalidated=[],columns=[];
+env.Zotero.ItemTreeManager={registerColumn:options=>(columns.push(options),'test-'+options.dataKey),unregisterColumn:key=>unregistered.push(key)};
 env.Zotero.Items={get:id=>id===a.id?a:null};
 env.Zotero.getMainWindows=()=>[{ZoteroPane:{itemsView:{invalidateRowCache:ids=>invalidated.push(...ids),getRowIndexByID:()=>0,tree:{invalidateRow:index=>assert.equal(index,0)}}}}];
-env.startReadingColumn('test@local');assert.equal(column.label,'已读');assert.equal(column.defaultIn[0],'*');
+env.startReadingColumn('test@local');const [column,selfColumn,labColumn]=columns;
+assert.deepEqual(columns.map(c=>c.label),['已读','自己已讲','实验室已讲']);assert.equal(column.defaultIn[0],'*');
 assert.equal(column.dataProvider(a),'0:1');assert.equal(column.dataProvider({...a,parentItemID:7}),'');assert.equal(column.dataProvider({}),'');
 class Element{constructor(tag){this.tag=tag;this.children=[];this.handlers={};this.dataset={};this.style={};}append(node){this.children.push(node);}setAttribute(key,value){this[key]=value;}addEventListener(type,handler){this.handlers[type]=handler;}}
 const doc={createElementNS:(_,tag)=>new Element(tag),defaultView:{alert:message=>{throw Error(message);}}};
@@ -37,5 +38,16 @@ let stoppedClick=false;checkbox.handlers.click({stopPropagation:()=>stoppedClick
 checkbox.checked=true;checkbox.handlers.change();assert.equal(env.isPaperRead(a),true);assert.deepEqual(invalidated,[1]);
 checkbox.checked=false;checkbox.handlers.change();assert.equal(env.isPaperRead(a),false);
 assert.equal(column.renderCell(0,'',{className:'read'},false,doc).children.length,0,'notes and children have no checkbox');
-env.stopReadingColumn();assert.equal(unregistered,'test-paperRead');assert.equal(env.readingColumnKey,null);
+const selfBox=selfColumn.renderCell(0,selfColumn.dataProvider(a),{className:'self'},false,doc).children[0].children[0];
+const labBox=labColumn.renderCell(0,labColumn.dataProvider(a),{className:'lab'},false,doc).children[0].children[0];
+assert.equal(selfBox.checked,false);assert.equal(labBox.checked,false);
+selfBox.checked=true;selfBox.handlers.change();assert.equal(env.getPaperFlag(a,'selfPresented'),true);assert.equal(env.getPaperFlag(a,'labPresented'),false);assert.equal(env.isPaperRead(a),false);
+labBox.checked=true;labBox.handlers.change();selfBox.checked=false;selfBox.handlers.change();
+assert.equal(env.getPaperFlag(a,'selfPresented'),false);assert.equal(env.getPaperFlag(a,'labPresented'),true);assert.equal(env.isPaperRead(a),false,'three progress flags remain independent');
+assert.equal(env.getPaperFlag({...a,libraryID:2},'labPresented'),false);assert.equal(env.getPaperFlag(b,'labPresented'),false,'other papers/libraries stay independent');
+fail=true;assert.throws(()=>env.setPaperFlag(a,'labPresented',false),/disk full/);assert.equal(env.getPaperFlag(a,'labPresented'),true);fail=false;
+assert.throws(()=>env.setPaperFlag(a,'unknown',true));assert.throws(()=>env.setPaperFlag(a,'selfPresented','yes'));
+env.stopReadingColumn();assert.deepEqual(unregistered,['test-paperRead','test-paperSelfPresented','test-paperLabPresented']);assert.equal(env.readingColumnKey,null);assert.equal(env.paperStatusColumnKeys.size,0);
+unregistered=[];env.Zotero.ItemTreeManager.registerColumn=options=>{if(options.dataKey==='paperSelfPresented')throw Error('registration failed');return 'test-'+options.dataKey;};
+assert.throws(()=>env.startReadingColumn('test@local'),/registration failed/);assert.deepEqual(unregistered,['test-paperRead']);assert.equal(env.paperStatusColumnKeys.size,0,'partial registration cleans up');
 console.log('PASS: paper deduplication, library isolation, explicit check/uncheck, durable preference flush/rollback, filters, stale windows and native tab session/undo cleanup');

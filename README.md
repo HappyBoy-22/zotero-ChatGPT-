@@ -2,18 +2,18 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Zotero 10](https://img.shields.io/badge/Zotero-10.0.x-CC2936.svg)](manifest.json)
-[![Version](https://img.shields.io/badge/version-0.14.0-20856B.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.15.0-20856B.svg)](CHANGELOG.md)
 
 在 Zotero 侧边栏使用 ChatGPT 官网，一边读论文，一边继续这篇论文的对话。使用网页登录，无需 API Key；同时提供 PDF 拖动、缩放和临时批注快捷键。
 
-**[下载插件 v0.14.0](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.14.0.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
+**[下载插件 v0.15.0](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.15.0.xpi)** · [使用指南](docs/usage.md) · [开发与测试](docs/development.md) · [反馈问题](https://github.com/HappyBoy-22/zotero-ChatGPT-/issues)
 
 ## 功能
 
 | 功能 | 使用方式 |
 | --- | --- |
 | 文件 / 文件夹批量导入 | 直接拖到 Zotero 文库界面，保留子目录为分类，相同文件复用已有记录 |
-| 手动标记已读 | 原生论文列表右侧增加“已读”复选框，原有勾选状态继续保留 |
+| 阅读与汇报状态 | 原生列表提供“已读 → 自己已讲 → 实验室已讲”三列独立复选框，原有勾选状态继续保留 |
 | ChatGPT 阅读侧栏 | 在 PDF 旁展开聊天，可拖动调整宽度 |
 | 一篇论文一个对话 | 首次发送后自动保存对话链接，返回论文时恢复原对话 |
 | 自定义分析 prompt | 首次展开时自动发送 prompt、标题、作者、年份、期刊 / 会议、DOI 和链接 |
@@ -28,7 +28,7 @@
 
 目前面向 **Zotero 10.0.x**，在 **Windows / Zotero 10.0.6** 环境验证。安装清单不支持 Zotero 6、7、8；其他系统尚未验证。
 
-1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.14.0.xpi)，保留 `.xpi` 后缀，无需解压。
+1. [下载最新 XPI](https://github.com/HappyBoy-22/zotero-ChatGPT-/raw/refs/heads/main/dist/chatgpt-reader-0.15.0.xpi)，保留 `.xpi` 后缀，无需解压。
 2. 打开 Zotero，进入 **工具 → 插件 → 齿轮 → 从文件安装插件**，选择下载的文件。
 3. 重启 Zotero，打开一篇 PDF，点击右上角 **ChatGPT** 展开侧栏。
 4. 在侧栏内登录自己的 ChatGPT 账号。登录状态与系统浏览器独立。

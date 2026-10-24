@@ -1,36 +1,56 @@
-/* Manual reading status, one flag per bibliographic item (or standalone PDF). */
+/* Manual paper progress, independent flags per bibliographic item (or standalone PDF). */
 var readingLists = new Map(), readingTabHooks = new Map();
 var readingColumnKey = null;
+var paperStatusColumnKeys = new Map();
+const PAPER_STATUS_COLUMNS = [
+  {flag:'read',dataKey:'paperRead',label:'已读',width:54},
+  {flag:'selfPresented',dataKey:'paperSelfPresented',label:'自己已讲',width:88},
+  {flag:'labPresented',dataKey:'paperLabPresented',label:'实验室已讲',width:104}
+];
 function startReadingColumn(pluginID) {
-  if (readingColumnKey) return;
-  readingColumnKey = Zotero.ItemTreeManager.registerColumn({
-    dataKey:'paperRead',label:'已读',pluginID,enabledTreeIDs:['main'],defaultIn:['*'],
-    width:'54',flex:0,fixedWidth:true,staticWidth:true,minWidth:48,
+  if (paperStatusColumnKeys.size) return;
+  try {
+    for (const status of PAPER_STATUS_COLUMNS) {
+      const key = Zotero.ItemTreeManager.registerColumn(paperStatusColumnOptions(pluginID,status));
+      if (!key) throw Error('无法注册'+status.label+'复选框列。');
+      paperStatusColumnKeys.set(status.flag,key);
+    }
+    readingColumnKey = paperStatusColumnKeys.get('read');
+  } catch(error) {stopReadingColumn();throw error;}
+}
+function paperStatusColumnOptions(pluginID,status) {
+  return {
+    dataKey:status.dataKey,label:status.label,pluginID,enabledTreeIDs:['main'],defaultIn:['*'],
+    width:String(status.width),flex:0,fixedWidth:true,staticWidth:true,minWidth:status.width-6,
     zoteroPersist:['width','hidden','sortDirection'],
-    dataProvider:item=>readingPaper(item)?`${isPaperRead(item)?1:0}:${item.id}`:'',
+    dataProvider:item=>readingPaper(item)?`${getPaperFlag(item,status.flag)?1:0}:${item.id}`:'',
     renderCell(index,data,column,isFirstColumn,doc) {
       const cell = doc.createElementNS('http://www.w3.org/1999/xhtml','span');
       cell.className = 'cell '+column.className;cell.style.cssText = 'display:flex;align-items:center;justify-content:center;';
       if (!data) return cell;
       const item = Zotero.Items.get(Number(data.split(':')[1]));if (!item || !readingPaper(item)) return cell;
       const checkbox = doc.createElementNS('http://www.w3.org/1999/xhtml','input');
-      checkbox.type = 'checkbox';checkbox.checked = isPaperRead(item);checkbox.dataset.paperRead = String(item.id);
+      checkbox.type = 'checkbox';checkbox.checked = getPaperFlag(item,status.flag);
+      checkbox.dataset.paperStatus = status.flag;checkbox.dataset.paperId = String(item.id);
+      if (status.flag==='read') checkbox.dataset.paperRead = String(item.id);
       checkbox.style.cssText = 'width:17px;height:17px;accent-color:#3478f6;cursor:pointer;margin:0;';
-      checkbox.setAttribute('aria-label','已读：'+(item.getField('title')||'未命名论文'));
-      checkbox.title = '手动标记已读 / 未读';
+      checkbox.setAttribute('aria-label',status.label+'：'+(item.getField('title')||'未命名论文'));
+      checkbox.title = '勾选 / 取消'+status.label;
       for (const type of ['pointerdown','mousedown','mouseup','click','dblclick']) checkbox.addEventListener(type,event=>event.stopPropagation());
       checkbox.addEventListener('keydown',event=>{if (event.code==='Space'||event.key==='Enter') event.stopPropagation();});
       checkbox.addEventListener('change',()=>{
-        try {setPaperRead(item,checkbox.checked);}
-        catch (error) {checkbox.checked = isPaperRead(item);report(error);doc.defaultView.alert('保存已读状态失败：'+error.message);}
+        try {setPaperFlag(item,status.flag,checkbox.checked);}
+        catch (error) {checkbox.checked = getPaperFlag(item,status.flag);report(error);doc.defaultView.alert('保存'+status.label+'状态失败：'+error.message);}
       });
       const content=doc.createElementNS('http://www.w3.org/1999/xhtml','span');content.className='cell-text';content.append(checkbox);cell.append(content);return cell;
     }
-  });
-  if (!readingColumnKey) throw Error('无法注册已读复选框列。');
+  };
 }
 function stopReadingColumn() {
-  if (readingColumnKey) Zotero.ItemTreeManager.unregisterColumn(readingColumnKey);readingColumnKey = null;
+  for (const key of paperStatusColumnKeys.values()) {
+    try {Zotero.ItemTreeManager.unregisterColumn(key);} catch(error) {report(error);}
+  }
+  paperStatusColumnKeys.clear();readingColumnKey = null;
 }
 function refreshReadingColumn(item) {
   for (const win of Zotero.getMainWindows?.() || []) {
@@ -56,17 +76,23 @@ function installReadingTabHooks(win) {
   readingTabHooks.set(win,{original,getState,undo,undoClose,cleanup});
 }
 function readingStatusKey(item) {
-  if(!Number.isInteger(item?.libraryID)||!/^[A-Z0-9]{8}$/.test(item?.key||''))throw Error('无法识别论文条目。');
-  return 'chatgptReader.read.'+item.libraryID+'.'+item.key;
+  return paperFlagKey(item,'read');
 }
-function isPaperRead(item){return Zotero.Prefs.get(readingStatusKey(item))===true;}
-function setPaperRead(item,value) {
-  if(typeof value!=='boolean')throw Error('已读状态必须为复选框值。');
-  const key=readingStatusKey(item),previous=Zotero.Prefs.get(key);
+function paperFlagKey(item,flag) {
+  if (!PAPER_STATUS_COLUMNS.some(status=>status.flag===flag)) throw Error('无法识别论文状态。');
+  if(!Number.isInteger(item?.libraryID)||!/^[A-Z0-9]{8}$/.test(item?.key||''))throw Error('无法识别论文条目。');
+  return 'chatgptReader.'+flag+'.'+item.libraryID+'.'+item.key;
+}
+function getPaperFlag(item,flag){return Zotero.Prefs.get(paperFlagKey(item,flag))===true;}
+function isPaperRead(item){return getPaperFlag(item,'read');}
+function setPaperRead(item,value){setPaperFlag(item,'read',value);}
+function setPaperFlag(item,flag,value) {
+  if(typeof value!=='boolean')throw Error('论文状态必须为复选框值。');
+  const key=paperFlagKey(item,flag),previous=Zotero.Prefs.get(key);
   try{Zotero.Prefs.set(key,value);Services.prefs.savePrefFile(null);}
   catch(error){if(previous===undefined)Zotero.Prefs.clear(key);else Zotero.Prefs.set(key,previous);throw error;}
   refreshReadingColumn(item);
-  for(const state of readingLists.values())if(!state.disposed){try{state.render();}catch(error){report(error);}}
+  if (flag==='read') for(const state of readingLists.values())if(!state.disposed){try{state.render();}catch(error){report(error);}}
 }
 function readingPaper(item) {
   return !!item&&!item.deleted&&!item.parentItemID&&(item.isRegularItem?.()||item.isPDFAttachment?.())
