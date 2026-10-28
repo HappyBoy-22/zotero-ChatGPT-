@@ -94,10 +94,12 @@ function onMainWindowLoad({ window: win }) {
   mainWindows.add(win);
   addSidebarToggle(win);
   if (typeof installFileImportDrop === 'function') installFileImportDrop(win);
+  if (typeof watchPaperSummaryColumn === 'function') watchPaperSummaryColumn(win);
 }
 
 function onMainWindowUnload({ window: win }) {
   if (typeof stopFileImportWindow === 'function') stopFileImportWindow(win);
+  if (typeof stopPaperSummaryWindow === 'function') stopPaperSummaryWindow(win);
   win.document.getElementById(PREFIX + 'menu')?.remove();
   cleanupSidebar(win);
   mainWindows.delete(win);
@@ -108,7 +110,7 @@ async function startup({ id, rootURI } = {}) {
   generation++;
   const startedGeneration = generation;
   if (!extensionModulesLoaded) {
-    for (const file of ['sidebar.js','bindings.js','analysis.js','autochat.js','gestures.js','margins.js','rectangles.js','images.js','reading-list.js','file-import.js']) Services.scriptloader.loadSubScriptWithOptions(rootURI + file, { target:this, ignoreCache:true });
+    for (const file of ['sidebar.js','bindings.js','analysis.js','autochat.js','gestures.js','margins.js','rectangles.js','images.js','reading-list.js','paper-summary.js','file-import.js']) Services.scriptloader.loadSubScriptWithOptions(rootURI + file, { target:this, ignoreCache:true });
     extensionModulesLoaded = true;
   }
   marginRootURI = rootURI;
@@ -117,7 +119,7 @@ async function startup({ id, rootURI } = {}) {
   if (previous && previous !== runtimeHandle) {
     try { previous.dispose(); } catch(error) { report(error); }
   }
-  runtimeHandle = {version:'0.15.0',dispose:shutdown};
+  runtimeHandle = {version:'0.16.0',dispose:shutdown};
   Zotero.__chatgptReaderRuntime = runtimeHandle;
   // This local build has no update server. Keep automatic update checks disabled.
   if (id) {

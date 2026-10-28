@@ -10,6 +10,8 @@ const PAPER_STATUS_COLUMNS = [
 function startReadingColumn(pluginID) {
   if (paperStatusColumnKeys.size) return;
   try {
+    const summary=Zotero.ItemTreeManager.registerColumn(paperSummaryColumnOptions(pluginID));
+    if(!summary)throw Error('无法注册简介列。');paperStatusColumnKeys.set('summary',summary);
     for (const status of PAPER_STATUS_COLUMNS) {
       const key = Zotero.ItemTreeManager.registerColumn(paperStatusColumnOptions(pluginID,status));
       if (!key) throw Error('无法注册'+status.label+'复选框列。');
@@ -47,6 +49,7 @@ function paperStatusColumnOptions(pluginID,status) {
   };
 }
 function stopReadingColumn() {
+  if(typeof stopPaperSummaries==='function')stopPaperSummaries();
   for (const key of paperStatusColumnKeys.values()) {
     try {Zotero.ItemTreeManager.unregisterColumn(key);} catch(error) {report(error);}
   }

@@ -9,7 +9,7 @@ body:
     attributes:
       label: 环境与版本
       description: 操作系统、Zotero 版本和插件版本
-      placeholder: Windows 11 / Zotero 10.0.6 / 插件 0.15.0
+      placeholder: Windows 11 / Zotero 10.0.6 / 插件 0.16.0
     validations:
       required: true
   - type: textarea

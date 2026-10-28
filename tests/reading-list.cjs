@@ -5,6 +5,7 @@ const env=vm.createContext({Map,Set,Number,report:e=>errors.push(e),
   Zotero:{Prefs:{get:k=>prefs.get(k),set:(k,v)=>prefs.set(k,v),clear:k=>prefs.delete(k)}},
   Services:{prefs:{savePrefFile(){if(fail)throw Error('disk full');flushes++;}}}
 });vm.runInContext(fs.readFileSync('reading-list.js','utf8'),env);
+vm.runInContext(fs.readFileSync('paper-summary.js','utf8'),env);
 const item=(id,key,title,libraryID=1,extra={})=>({id,key,libraryID,getField:()=>title,isRegularItem:()=>true,isPDFAttachment:()=>false,...extra});
 const a=item(1,'ABCDEFG2','Alpha <paper>'),b=item(2,'ABCDEFG3','第二篇',2),pdf=item(3,'ABCDEFG4','Standalone PDF',1,{isRegularItem:()=>false,isPDFAttachment:()=>true});
 const rows=env.readingListRows([a,b,pdf,item(4,'ABCDEFG5','Child PDF',1,{parentItemID:1}),item(5,'ABCDEFG6','deleted',1,{deleted:true}),item(6,'ABCDEFG7','note',1,{isRegularItem:()=>false})],new Map([[1,'My Library'],[2,'Group']]));
@@ -27,8 +28,8 @@ let unregistered=[];const invalidated=[],columns=[];
 env.Zotero.ItemTreeManager={registerColumn:options=>(columns.push(options),'test-'+options.dataKey),unregisterColumn:key=>unregistered.push(key)};
 env.Zotero.Items={get:id=>id===a.id?a:null};
 env.Zotero.getMainWindows=()=>[{ZoteroPane:{itemsView:{invalidateRowCache:ids=>invalidated.push(...ids),getRowIndexByID:()=>0,tree:{invalidateRow:index=>assert.equal(index,0)}}}}];
-env.startReadingColumn('test@local');const [column,selfColumn,labColumn]=columns;
-assert.deepEqual(columns.map(c=>c.label),['已读','自己已讲','实验室已讲']);assert.equal(column.defaultIn[0],'*');
+env.startReadingColumn('test@local');const [summaryColumn,column,selfColumn,labColumn]=columns;
+assert.deepEqual(columns.map(c=>c.label),['简介','已读','自己已讲','实验室已讲']);assert.equal(column.defaultIn[0],'*');
 assert.equal(column.dataProvider(a),'0:1');assert.equal(column.dataProvider({...a,parentItemID:7}),'');assert.equal(column.dataProvider({}),'');
 class Element{constructor(tag){this.tag=tag;this.children=[];this.handlers={};this.dataset={};this.style={};}append(node){this.children.push(node);}setAttribute(key,value){this[key]=value;}addEventListener(type,handler){this.handlers[type]=handler;}}
 const doc={createElementNS:(_,tag)=>new Element(tag),defaultView:{alert:message=>{throw Error(message);}}};
@@ -47,7 +48,7 @@ assert.equal(env.getPaperFlag(a,'selfPresented'),false);assert.equal(env.getPape
 assert.equal(env.getPaperFlag({...a,libraryID:2},'labPresented'),false);assert.equal(env.getPaperFlag(b,'labPresented'),false,'other papers/libraries stay independent');
 fail=true;assert.throws(()=>env.setPaperFlag(a,'labPresented',false),/disk full/);assert.equal(env.getPaperFlag(a,'labPresented'),true);fail=false;
 assert.throws(()=>env.setPaperFlag(a,'unknown',true));assert.throws(()=>env.setPaperFlag(a,'selfPresented','yes'));
-env.stopReadingColumn();assert.deepEqual(unregistered,['test-paperRead','test-paperSelfPresented','test-paperLabPresented']);assert.equal(env.readingColumnKey,null);assert.equal(env.paperStatusColumnKeys.size,0);
+env.stopReadingColumn();assert.deepEqual(unregistered,['test-paperSummary','test-paperRead','test-paperSelfPresented','test-paperLabPresented']);assert.equal(env.readingColumnKey,null);assert.equal(env.paperStatusColumnKeys.size,0);
 unregistered=[];env.Zotero.ItemTreeManager.registerColumn=options=>{if(options.dataKey==='paperSelfPresented')throw Error('registration failed');return 'test-'+options.dataKey;};
-assert.throws(()=>env.startReadingColumn('test@local'),/registration failed/);assert.deepEqual(unregistered,['test-paperRead']);assert.equal(env.paperStatusColumnKeys.size,0,'partial registration cleans up');
+assert.throws(()=>env.startReadingColumn('test@local'),/registration failed/);assert.deepEqual(unregistered,['test-paperSummary','test-paperRead']);assert.equal(env.paperStatusColumnKeys.size,0,'partial registration cleans up');
 console.log('PASS: paper deduplication, library isolation, explicit check/uncheck, durable preference flush/rollback, filters, stale windows and native tab session/undo cleanup');
